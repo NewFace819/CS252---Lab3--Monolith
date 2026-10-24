@@ -15,3 +15,6 @@ venv/
 # Runtime output
 *.log
 history.txt
+
+# Editor
+.vs/
