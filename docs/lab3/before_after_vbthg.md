@@ -28,8 +28,9 @@ is complete.
 
 - Pinned dependencies: Pydantic 2.9.2, python-dotenv 1.0.1, pytest 8.3.3, Ruff 0.6.9.
 - 26 added tests plus 3 existing model tests pass; no real key or provider is used.
-- OpenAI Codex generated the owned implementation, tests and this worksheet, and
-  executed checks. The member must read and understand all retained code; this
-  worksheet does not claim that a personal oral review has already occurred.
+- The member defined the requested scope and directed work against the team's
+  contract. OpenAI Codex assisted with implementation, tests, documentation and
+  automated checks; generated code was retained as recorded in docs/ai-use-log.md.
+  The member is responsible for reviewing, understanding and explaining the work.
 - H1 (AI feature extension with three personally reviewed improvements) is a
   separate homework task and is not claimed complete by this configuration PR.
