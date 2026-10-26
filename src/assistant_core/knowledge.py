@@ -82,4 +82,3 @@ class Handbook:
                 best = rule
 
         return best if best_score >= 1 else None
-
