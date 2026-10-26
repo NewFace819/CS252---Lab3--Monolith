@@ -5,6 +5,7 @@ Owner: THA (see issue). The Protocol is fixed; replace the stub bodies.
 
 from typing import Protocol
 
+from assistant_core.errors import ProviderError
 from assistant_core.models import Rule
 
 
@@ -16,7 +17,7 @@ class TemplateResponder:
     """No AI: answer straight from the rule. Also the service's fallback."""
 
     def explain(self, question: str, rule: Rule) -> str:
-        raise NotImplementedError("responder.TemplateResponder — owned by THA")
+        return f"{rule.title}: {rule.text}"
 
 
 class StubLLMResponder:
@@ -26,4 +27,6 @@ class StubLLMResponder:
         self.fail = fail
 
     def explain(self, question: str, rule: Rule) -> str:
-        raise NotImplementedError("responder.StubLLMResponder — owned by THA")
+        if self.fail:
+            raise ProviderError("stub provider unavailable")
+        return f"Based on '{rule.title}': {rule.text}"
