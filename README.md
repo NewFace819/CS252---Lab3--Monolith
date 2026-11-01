@@ -47,3 +47,7 @@ If you need to change the contract (`models.py`, `errors.py`, or a signature), o
 3. Open a PR that closes your issue; one teammate reviews.
 
 Individual work (everyone): `docs/lab3/before_after_<name>.md` and the H1 AI-extension review.
+
+## Lab 4 — REST API
+
+Xem [docs/lab4/README.md](docs/lab4/README.md): hợp đồng API, phân công và checklist nộp bài.
