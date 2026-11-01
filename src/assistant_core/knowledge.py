@@ -35,6 +35,10 @@ class OfficeDirectory:
         """Lower-case office names, used by the router."""
         return set(self._offices.keys())
 
+    def all(self) -> list[Office]:
+        """All offices sorted by name."""
+        return sorted(self._offices.values(), key=lambda office: office.name)
+
     def find(self, text: str) -> Office | None:
         """First office whose name appears in ``text`` (case-insensitive)."""
         lower = text.lower()

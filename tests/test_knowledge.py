@@ -35,6 +35,20 @@ def test_office_directory_find_miss():
     assert directory.find("Where is the cafeteria?") is None
 
 
+def test_office_directory_all():
+    directory = OfficeDirectory.from_csv(DATA_DIR / "offices.csv")
+    offices = directory.all()
+    assert len(offices) == 4
+    names = [o.name for o in offices]
+    assert names == ["IT Helpdesk", "Library", "Student Affairs", "Training Office"]
+    assert names == sorted(names)
+
+
+def test_office_directory_all_empty():
+    directory = OfficeDirectory({})
+    assert directory.all() == []
+
+
 def test_office_directory_missing_file(tmp_path):
     with pytest.raises(DataError):
         OfficeDirectory.from_csv(tmp_path / "nonexistent.csv")
