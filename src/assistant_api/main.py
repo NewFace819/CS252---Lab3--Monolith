@@ -10,6 +10,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from assistant_api.feedback import router as feedback_router
 from assistant_api.schemas import ChatRequest, ChatResponse
 from assistant_core.__main__ import build_service
 from assistant_core.config import load_settings
@@ -42,6 +43,7 @@ def create_app(settings=None, service=None, weather_client=None) -> FastAPI:
     app.state.settings = settings
     app.state.service = service
     app.state.weather_client = weather_client
+    app.state.feedback_store = []  # Per-app, in-memory storage; Lab 5 adds persistence.
 
     # Starlette's class also covers the router's own 404 / 405, not only our raised HTTPException.
     @app.exception_handler(StarletteHTTPException)
@@ -64,7 +66,7 @@ def create_app(settings=None, service=None, weather_client=None) -> FastAPI:
         resp = request.app.state.service.handle(Message(text=req.message, session_id=req.session_id))
         return ChatResponse(**resp.model_dump(), request_id=uuid.uuid4().hex[:12])
 
-    # app.include_router(feedback_router)   # Thông  — T2/T3
+    app.include_router(feedback_router)  # Thông  — T2/T3
     # app.include_router(weather_router)    # Đức Huy — T4
     # app.include_router(offices_router)    # Gia Huy — H1
     return app

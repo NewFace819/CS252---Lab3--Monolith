@@ -21,6 +21,7 @@ class Settings(BaseModel):
     retake_multiplier: float = 1.5
     max_credits: int = 30
     log_level: str = "INFO"
+    api_admin_key: str = Field(default="change-me", repr=False)
 
 
 def load_settings(env_file: str | None = ".env") -> Settings:
@@ -39,6 +40,7 @@ def load_settings(env_file: str | None = ".env") -> Settings:
             retake_multiplier=float(os.getenv("RETAKE_MULTIPLIER", "1.5")),
             max_credits=int(os.getenv("MAX_CREDITS", "30")),
             log_level=os.getenv("LOG_LEVEL", "INFO").strip().upper(),
+            api_admin_key=os.getenv("API_ADMIN_KEY", "change-me").strip(),
         )
     except (ValueError, ValidationError):
         # Do not expose environment values or Pydantic's input dump in errors.
