@@ -11,6 +11,8 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from assistant_api.feedback import router as feedback_router
+from assistant_api.offices import router as offices_router
+from assistant_api.ratelimit import RateLimiter
 from assistant_api.schemas import ChatRequest, ChatResponse
 from assistant_core.__main__ import build_service
 from assistant_core.config import load_settings
@@ -32,18 +34,21 @@ def error(status_code: int, code: str, message: str) -> JSONResponse:
     return JSONResponse(status_code=status_code, content={"error": {"code": code, "message": message}})
 
 
-def create_app(settings=None, service=None, weather_client=None) -> FastAPI:
+def create_app(settings=None, service=None, weather_client=None, rate_limiter=None) -> FastAPI:
     """Build the app. Tests pass fakes; uvicorn --factory passes nothing and gets the real parts."""
     if settings is None:
         settings = load_settings()
     if service is None:
         service = build_service(settings)
+    if rate_limiter is None:
+        rate_limiter = RateLimiter()
 
     app = FastAPI(title="Study Assistant API", version=API_VERSION)
     app.state.settings = settings
     app.state.service = service
     app.state.weather_client = weather_client
     app.state.feedback_store = []  # Per-app, in-memory storage; Lab 5 adds persistence.
+    app.state.rate_limiter = rate_limiter
 
     # Starlette's class also covers the router's own 404 / 405, not only our raised HTTPException.
     @app.exception_handler(StarletteHTTPException)
@@ -63,10 +68,14 @@ def create_app(settings=None, service=None, weather_client=None) -> FastAPI:
 
     @app.post("/v1/chat")
     def chat(req: ChatRequest, request: Request) -> ChatResponse:
+        client_id = request.client.host if request.client else "unknown"
+        limiter = getattr(request.app.state, "rate_limiter", None)
+        if limiter is not None and not limiter.allow(client_id):
+            raise StarletteHTTPException(429, "Rate limit exceeded")
         resp = request.app.state.service.handle(Message(text=req.message, session_id=req.session_id))
         return ChatResponse(**resp.model_dump(), request_id=uuid.uuid4().hex[:12])
 
     app.include_router(feedback_router)  # Thông  — T2/T3
     # app.include_router(weather_router)    # Đức Huy — T4
-    # app.include_router(offices_router)    # Gia Huy — H1
+    app.include_router(offices_router)
     return app

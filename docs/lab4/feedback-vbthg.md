@@ -26,7 +26,7 @@ Consequently, oversized request ids/comments remain accepted and an explicit `co
 ## Validation
 
 - Python 3.12 locally, using the exact versions in `requirements.txt`; CI uses Python 3.11.
-- `python -m pytest -q`: 120 passed (including the five practice tests).
+- `python -m pytest -q`: 126 passed (including the five practice tests, after integrating main's offices and rate limiter).
 - `python -m ruff check .`, `python -m ruff format --check .`, `git diff --check`: passed.
 - HTTP smoke check against a running uvicorn app: see PR validation details.
 
