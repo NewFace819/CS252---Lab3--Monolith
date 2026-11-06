@@ -14,7 +14,13 @@ PR #19 supplies the shared T2/T3 implementation in `src/assistant_api/main.py` a
 - `tests/api/test_feedback_vbthg.py`: all three ratings and UTC timestamps, omitted/null comments, boundary lengths, invalid input not saved, secret-free auth errors, disabled keys and per-app data isolation. External weather is mocked.
 - `tests/api/test_config_vbthg.py`: API defaults/environment fields, dotenv precedence, blank keys, secret-free repr and invalid numeric input. The original Week 3 tests stay unchanged.
 - `lab04/practice/vbthg/`: P1–P5 with the five official practice checks. Run explicitly because the team's default pytest collection is limited to `tests/`.
-- `reflection-vbthg.md`: H2 draft awaiting Thông's review/revision before submission.
+- `reflection-vbthg.md`: five-line H2 reflection explaining direct Python calls versus HTTP and why the team can share a backend across clients. AI assistance is recorded in `docs/ai-use-log.md`.
+
+## Swagger evidence
+
+The screenshot shows a successful `POST /v1/chat` call from `/docs`, including HTTP 200 and the returned answer, intent, sources, degraded flag and request id.
+
+![Successful chat call in Swagger](docs-chat-vbthg.png)
 
 ## Verify
 
