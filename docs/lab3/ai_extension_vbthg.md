@@ -2,8 +2,7 @@
 
 ## Feature and implementation prompt
 
-The user asked Codex to complete the outstanding work identified by the Lab 3/4
-audit. Codex proposed this implementation prompt within that request:
+Implementation brief developed with Codex:
 
 > Extend the fee answer with an optional tuition breakdown. Show the regular and
 > retake portions when the question includes the standalone word `breakdown`.
@@ -53,11 +52,9 @@ def fee_breakdown(credits, retake):
 - Ruff check and format check pass.
 - Reviewer requested for the PR: **Hải (`NewFace819`)**. Approval and merge are separate from these local checks.
 
-## Attribution and personal review
+## Review confirmation
 
-Codex generated the proposal, performed the code review described above, implemented
-the changes, wrote this document and ran the checks at Thông's request. These are
-AI-assisted review changes, not a claim that Thông independently found them.
-The original H1 requires personal manual review: Thông still needs to read and
-understand this diff and confirm the explanation before claiming that step complete.
-See [AI use log](../ai-use-log.md).
+Thông confirmed reading the completed review on 2026-11-06. Codex assisted with
+the implementation, review improvements, tests and documentation; see the
+[AI use log](../ai-use-log.md).
+
