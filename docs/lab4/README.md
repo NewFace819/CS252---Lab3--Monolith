@@ -10,7 +10,9 @@ py -3.11 -m venv .venv
 .venv\Scripts\activate          # Git Bash: source .venv/Scripts/activate
 pip install -r requirements.txt
 pip install -e .
-cp .env.example .env          # Lưu ý: mở .env và bỏ comment API_ADMIN_KEY=change-me để chạy curl_tests.sh kiểm tra feedback
+cp .env.example .env
+# Muốn thử GET /v1/feedback: bỏ dấu # ở dòng API_ADMIN_KEY trong .env (hoặc export API_ADMIN_KEY=change-me)
+# trước khi chạy uvicorn, rồi chạy curl với cùng khóa: API_ADMIN_KEY=change-me bash api-tests/curl_tests.sh
 pytest -q                       # Lab 3 phải xanh (92 passed) trước khi làm
 ```
 
@@ -46,14 +48,14 @@ Quy ước chung:
 ### Hải — khung API + T1 + tích hợp (branch `feat/api-skeleton`)
 Làm **đầu tiên**, merge sớm để các bạn khác tách branch từ đó.
 1. `src/assistant_api/__init__.py`, `schemas.py`: `ChatRequest` (`message` min_length=1, `session_id`), `ChatResponse`, `FeedbackIn` (`request_id`, `rating` -1/0/1, `comment`), `FeedbackOut` (+`id`, `created_at`), `Weather`.
-2. `main.py`: `create_app(settings=None, service=None, weather_client=None)` dùng với `--factory`; mặc định `load_settings()` + `build_service()` từ `assistant_core.__main__`; `GET /health`; hàm `error(code, message)` + handler cho `HTTPException` và lỗi validate (422 → `invalid_request`). Có sẵn chỗ `include_router` cho feedback, weather, offices để các bạn chỉ thêm một dòng.
+2. `main.py`: `create_app(settings=None, service=None, weather=None)` dùng với `--factory`; mặc định `load_settings()` + `build_service()` từ `assistant_core.service`; `GET /health`; hàm `error(code, message)` + handler cho `HTTPException` và lỗi validate (422 → `invalid_request`). Có sẵn chỗ `include_router` cho feedback, weather, offices để các bạn chỉ thêm một dòng.
 3. **T1** `POST /v1/chat`: `service.handle(Message(...))`, thêm `request_id`.
 4. Cuối buổi: review PR của mọi người, merge, tag `v0.4-api`, nộp link tag.
 Xong khi: `/health` 200; `/v1/chat` trả đủ 5 trường; message rỗng 422.
 
 ### Thông — config + T2 + T3 (branch `feat/api-feedback`)
-1. `config.py`: thêm `api_admin_key: str = "change-me"` vào `Settings` và đọc `API_ADMIN_KEY`; thêm test trong `tests/test_config.py`. Không đổi hành vi cũ.
-2. `src/assistant_api/feedback.py`: router, `feedback_store` (list), `require_admin` đọc header `X-API-Key`, sai/thiếu → 401.
+1. `config.py`: thêm `api_admin_key: str | None = None` vào `Settings` và đọc `API_ADMIN_KEY` (không đặt thì endpoint admin bị khóa); thêm test trong `tests/test_config.py`. Không đổi hành vi cũ.
+2. Trong `src/assistant_api/main.py`: `feedback_store` (list), `require_admin` đọc header `X-API-Key`, sai/thiếu → 401.
 3. **T2** `POST /v1/feedback`: status 201, `id=len(store)+1`, `created_at` UTC; rating ngoài -1/0/1 → 422.
 4. **T3** `GET /v1/feedback`: có `require_admin`, trả toàn bộ store.
 Xong khi: POST hợp lệ 201; rating 5 → 422; GET không key → 401; có key → danh sách.
@@ -67,9 +69,9 @@ Xong khi: fake site trả 200; fake site sập trả 503; CI xanh.
 ### Tô Hoàng Anh — test + công cụ gọi thử (branch `test/api-suite`)
 Viết theo hợp đồng ngay từ đầu; test sẽ fail cho tới khi module của người khác merge, đó là bình thường.
 1. `tests/conftest.py`: thêm fixture `client = TestClient(create_app(settings, service, weather))` với service giả, helper `weather_with(handler)` dùng `httpx.MockTransport` (không đổi fixture Lab 3 cũ).
-2. `tests/test_api.py`: health, chat OK, chat rỗng 422 (`invalid_request`), feedback tạo 201, rating sai 422, list feedback không key 401 / có key 200, weather OK, `test_weather_down_returns_503` (fake site 500), `test_rate_limit` (`@pytest.mark.skip` tới khi có bonus).
+2. `tests/test_api.py`: health, chat OK, chat rỗng 422 (`invalid_request`), feedback tạo 201, rating sai 422, list feedback không key 401 / có key 200, weather OK, `test_weather_down_returns_503` (fake site 500), `test_rate_limit` (bỏ skip sau khi có bonus).
 3. `api-tests/curl_tests.sh` (Git Bash, in status code từng request theo bảng hợp đồng) và `api-tests/study-assistant.postman_collection.json`.
-Xong khi: sau khi mọi PR merge, `pytest -q` xanh (1 skip); `bash api-tests/curl_tests.sh` in đúng status mong đợi.
+Xong khi: sau khi mọi PR merge, `pytest -q` xanh; `bash api-tests/curl_tests.sh` in đúng status mong đợi.
 
 ### Gia Huy — H1 + bonus + ảnh nộp (branch `feat/api-offices`)
 1. `knowledge.py`: thêm `OfficeDirectory.all()` trả `list[Office]` sắp theo `name`; test trong `tests/test_knowledge.py`.
