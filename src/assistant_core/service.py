@@ -6,9 +6,11 @@ Owner: Hải (see issue).
 import logging
 import time
 
-from assistant_core.errors import InvalidRequest, ProviderError
+from assistant_core.config import Settings
+from assistant_core.errors import ConfigError, InvalidRequest, ProviderError
+from assistant_core.knowledge import Handbook, OfficeDirectory
 from assistant_core.models import Intent, Message, Response, Source
-from assistant_core.responder import TemplateResponder
+from assistant_core.responder import Responder, StubLLMResponder, TemplateResponder
 from assistant_core.router import route
 from assistant_core.tools import parse_credits, tuition
 
@@ -16,6 +18,8 @@ log = logging.getLogger("assistant_core")
 
 GREETING_ANSWER = "Hello! I can help with offices, fees and rules."
 UNKNOWN_ANSWER = "Sorry, I don't know that yet."
+
+RESPONDERS: dict[str, type[Responder]] = {"stub": StubLLMResponder, "template": TemplateResponder}
 
 
 class AssistantService:
@@ -73,3 +77,13 @@ class AssistantService:
             answer = self.fallback.explain(text, rule)
             return Response(answer=answer, intent=Intent.RULE, sources=sources, degraded=True)
         return Response(answer=answer, intent=Intent.RULE, sources=sources)
+
+
+def build_service(settings: Settings) -> AssistantService:
+    """Wire every module together. Raises ConfigError / DataError at startup."""
+    responder_cls = RESPONDERS.get(settings.llm_provider)
+    if responder_cls is None:
+        raise ConfigError(f"LLM_PROVIDER={settings.llm_provider!r} is not supported yet (Week 4).")
+    offices = OfficeDirectory.from_csv(settings.data_dir / "offices.csv")
+    handbook = Handbook.from_json(settings.data_dir / "handbook.json")
+    return AssistantService(settings, offices, handbook, responder_cls())
