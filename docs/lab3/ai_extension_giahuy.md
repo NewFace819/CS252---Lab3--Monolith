@@ -36,3 +36,4 @@ The AI draft attempted to modify `models.py`, `offices.csv`, and `knowledge.py`.
 ## 5. What I would still change
 
 For a production university assistant, alias mappings should be maintainable by school administrative staff via a dedicated configuration table or CMS rather than hardcoded mappings, and support semantic similarity matching (embeddings) for colloquial campus queries.
+
