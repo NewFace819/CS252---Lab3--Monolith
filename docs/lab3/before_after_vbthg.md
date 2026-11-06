@@ -34,3 +34,5 @@ is complete.
   The member is responsible for reviewing, understanding and explaining the work.
 - H1 (AI feature extension with three personally reviewed improvements) is a
   separate homework task and is not claimed complete by this configuration PR.
+  The later [H1 extension report](ai_extension_vbthg.md) records the implementation,
+  AI-assisted review changes; the member has since confirmed reading that review.
