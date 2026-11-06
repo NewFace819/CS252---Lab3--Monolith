@@ -9,6 +9,7 @@ import logging
 import time
 
 import httpx
+from pydantic import BaseModel, Field
 
 from assistant_api.schemas import Weather
 
@@ -32,6 +33,17 @@ WMO = {
 
 class ExternalServiceError(Exception):
     """The upstream service failed and no cached value is available."""
+
+
+class _CurrentWeather(BaseModel):
+    temperature_2m: float = Field(allow_inf_nan=False)
+    wind_speed_10m: float = Field(allow_inf_nan=False)
+    weather_code: int = Field(strict=True)
+    time: str
+
+
+class _Forecast(BaseModel):
+    current: _CurrentWeather
 
 
 class WeatherClient:
@@ -59,12 +71,13 @@ class WeatherClient:
             try:
                 r = self._client.get(self.url, params=params)
                 r.raise_for_status()
-                cur = r.json()["current"]
+                # Invalid upstream data follows the same retry/cache path as HTTP failures.
+                cur = _Forecast.model_validate(r.json()).current
                 w = Weather(
-                    temperature_c=cur["temperature_2m"],
-                    wind_kmh=cur["wind_speed_10m"],
-                    description=WMO.get(cur["weather_code"], f"code {cur['weather_code']}"),
-                    observed_at=cur["time"],
+                    temperature_c=cur.temperature_2m,
+                    wind_kmh=cur.wind_speed_10m,
+                    description=WMO.get(cur.weather_code, f"code {cur.weather_code}"),
+                    observed_at=cur.time,
                 )
                 self._cache = (time.monotonic(), w)
                 return w
