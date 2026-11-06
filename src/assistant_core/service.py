@@ -11,8 +11,8 @@ from assistant_core.errors import ConfigError, InvalidRequest, ProviderError
 from assistant_core.knowledge import Handbook, OfficeDirectory
 from assistant_core.models import Intent, Message, Response, Rule, Source
 from assistant_core.responder import Responder, StubLLMResponder, TemplateResponder
-from assistant_core.router import route
-from assistant_core.tools import add_working_days, parse_credits, parse_date, tuition, working_days_limit
+from assistant_core.router import is_help, route
+from assistant_core.tools import add_working_days, help_text, parse_credits, parse_date, tuition, working_days_limit
 
 log = logging.getLogger("assistant_core")
 
@@ -47,6 +47,8 @@ class AssistantService:
     def _dispatch(self, text: str) -> Response:
         intent = route(text, self.offices.names)
         if intent is Intent.GREETING:
+            if is_help(text):
+                return Response(answer=self._help(), intent=intent)
             return Response(answer=GREETING_ANSWER, intent=intent)
         if intent is Intent.FEE:
             return self._fee(text)
@@ -55,6 +57,9 @@ class AssistantService:
             if office is not None:
                 return Response(answer=f"{office.name}: room {office.room}, open {office.hours}.", intent=intent)
         return self._rule(text)
+
+    def _help(self) -> str:
+        return help_text([o.name for o in self.offices.all()], self.handbook.titles())
 
     def _fee(self, text: str) -> Response:
         s = self.settings

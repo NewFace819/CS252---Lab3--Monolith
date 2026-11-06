@@ -69,6 +69,10 @@ class Handbook:
         except (OSError, json.JSONDecodeError) as exc:
             raise DataError(f"Could not read {path}: {exc}") from exc
 
+    def titles(self) -> list[str]:
+        """Rule titles in file order, so the help answer follows the data."""
+        return [rule.title for rule in self._rules]
+
     def search(self, query: str) -> Rule | None:
         """Best rule by keyword overlap (words > 3 chars), or None if nothing matches."""
         words = [w.strip(".,?!:;\"'()") for w in query.lower().split()]

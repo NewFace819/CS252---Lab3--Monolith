@@ -77,3 +77,14 @@ def add_working_days(start: date, days: int) -> date:
         if current.weekday() < 5:
             days -= 1
     return current
+
+
+def help_text(office_names: list[str], rule_titles: list[str]) -> str:
+    """What the assistant can do, built from the loaded data so it never goes stale."""
+    offices = ", ".join(office_names) or "none loaded"
+    rules = "; ".join(rule_titles) or "none loaded"
+    return (
+        "I can: 1) calculate tuition (e.g. 'tuition for 18 credits and 2 retake'), "
+        f"2) give room and hours for an office ({offices}), "
+        f"3) answer handbook rules ({rules})."
+    )
