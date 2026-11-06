@@ -39,6 +39,11 @@ def test_parse_date_returns_none_without_a_valid_date(text):
     assert parse_date(text) is None
 
 
+def test_parse_date_returns_none_when_several_dates():
+    assert parse_date("Today is 2026-11-06. I missed my final exam on 2026-11-02.") is None
+    assert parse_date("exam on 2026-11-06, I said 2026-11-06 already") == date(2026, 11, 6)
+
+
 def test_working_days_limit_reads_the_rule():
     assert working_days_limit("submit evidence to the Training Office within 3 working days.") == 3
     assert working_days_limit("Late thesis registration requires approval.") is None
@@ -70,6 +75,20 @@ def test_exam_absence_with_date_gives_exact_deadline(real_service):
 
 def test_exam_absence_without_date_keeps_the_rule_answer(real_service):
     r = real_service.handle(Message(text="I was absent from my final exam, what should I do?"))
+    assert [s.id for s in r.sources] == ["H26-7.2"]
+    assert "Deadline:" not in r.answer and "3 working days" in r.answer
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Today is 2026-11-06. I missed my final exam on 2026-11-02.",
+        "Can I submit evidence on 2026-11-10 for my final exam missed on 2026-11-06?",
+    ],
+)
+def test_no_exact_deadline_when_the_exam_date_is_ambiguous(real_service, text):
+    # regression (review on PR #24): the first date is not always the exam date
+    r = real_service.handle(Message(text=text))
     assert [s.id for s in r.sources] == ["H26-7.2"]
     assert "Deadline:" not in r.answer and "3 working days" in r.answer
 

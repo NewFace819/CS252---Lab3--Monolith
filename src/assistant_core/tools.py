@@ -47,13 +47,18 @@ def tuition(credits: int, retake: int, rate: int, retake_multiplier: float, max_
 
 
 def parse_date(text: str) -> date | None:
-    """First valid YYYY-MM-DD date in ``text``, or None (an impossible date such as 2026-02-30 counts as none)."""
+    """The one valid YYYY-MM-DD date in ``text``, or None.
+
+    None if there is no valid date (2026-02-30 does not count) or several different ones, because then we cannot
+    tell which is the exam date ("Today is 2026-11-06. I missed my exam on 2026-11-02.").
+    """
+    found: set[date] = set()
     for match in _ISO_DATE.finditer(text):
         try:
-            return date(*(int(part) for part in match.groups()))
+            found.add(date(*(int(part) for part in match.groups())))
         except ValueError:
             continue
-    return None
+    return found.pop() if len(found) == 1 else None
 
 
 def working_days_limit(rule_text: str) -> int | None:

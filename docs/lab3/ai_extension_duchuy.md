@@ -30,7 +30,7 @@ not by the existing checks.
 | 3 | `parse_date(text)` that fell back to `date.today()` when no date was found and called `date.fromisoformat` on the match. | `tools.py` must be pure (no clock, no I/O), and "today" is a guess: the exam may have been days ago. An impossible date such as `2026-02-30` raised `ValueError`, so the request crashed (500 through the API). | `parse_date` returns `None` when there is no valid date; the service then answers with the rule only, which already says "within 3 working days". | Deterministic, testable functions, and bad input gives a normal answer instead of a crash. |
 | 4 | `log.info("exam absence question: %s", text)` in the new service method. | Logs the full user message, which may contain health details ("medical reasons"). The team rule is to log intent, latency, session and degraded only. | Removed the log line; added `test_question_text_is_not_logged`. | Privacy, and consistency with `logging_setup.py` and `test_service.py`. |
 | 5 | `rule = self.handbook.search("exam absence")` then `rule.text` directly, outside the responder. | Crashes with `AttributeError` if the rule is missing from `handbook.json`; it also skipped the responder, so the provider fallback (`degraded=True`) never applied. | The deadline is added inside the existing `_rule()` path, after the responder or its template fallback, through `_with_deadline()`. | Missing rules give the normal "unknown" answer, and the fallback still works. Any rule that says "within N working days" gets the same feature. |
-| 6 | 3 tests: router, `parse_date` with a date, deadline from Monday 2026-11-02. | Monday + 3 is the same in calendar and working days, so the test passed with the wrong logic. No test for weekends, missing dates, bad dates or the service. | 13 tests in `tests/test_exam_absence.py`: Friday and Saturday starts, negative days, no date, impossible date, rule without a limit, provider failure, and no user text in logs. | The tests now fail on the bugs found in rows 2–5. |
+| 6 | 3 tests: router, `parse_date` with a date, deadline from Monday 2026-11-02. | Monday + 3 is the same in calendar and working days, so the test passed with the wrong logic. No test for weekends, missing dates, bad dates or the service. | 16 tests in `tests/test_exam_absence.py`: Friday and Saturday starts, negative days, no date, impossible date, rule without a limit, provider failure, and no user text in logs. | The tests now fail on the bugs found in rows 2–5. |
 
 ## 4. Checklist
 
@@ -39,11 +39,19 @@ not by the existing checks.
 - **New dependencies?** None (`re` and `datetime` from the standard library).
 - **Secrets?** None used or printed.
 - **Logging of user data?** The draft logged the full question; removed, with a test.
-- **Tests added and meaningful?** 13 tests, including cases that fail on the draft (Friday start, impossible
-  date, logged user text). Full suite: 160 passed; `ruff check .`
+- **Tests added and meaningful?** 16 tests, including cases that fail on the draft (Friday start, impossible
+  date, logged user text). Full suite: 163 passed; `ruff check .`
   and `ruff format --check .` clean.
 
 ## 5. What I would still change
 
 Public holidays (Tết, 30/4, 2/9) are not skipped, so the deadline can be too early around them. A holiday list in
 `data/` would fix this. Dates are only recognised in `YYYY-MM-DD`; Vietnamese students usually write `06/11/2026`.
+
+## 6. Peer review (PR #24)
+
+Thông found that a question with several dates took the first one as the exam date:
+"Today is 2026-11-06. I missed my final exam on 2026-11-02." gave 2026-11-11 instead of 2026-11-05, a later
+deadline than the rule allows. `parse_date` now returns a date only when the question has exactly one; with
+several different dates the answer gives the rule ("within 3 working days") without an exact date. Regression
+tests: `test_parse_date_returns_none_when_several_dates`, `test_no_exact_deadline_when_the_exam_date_is_ambiguous`.
