@@ -1,11 +1,12 @@
-"""Skeleton + T1 tests: /health, /v1/chat and the shared error shape."""
+"""Skeleton + T1 tests: /health, /v1/chat and the shared error shape (fake service, no network)."""
 
-from types import SimpleNamespace
-
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
 from assistant_api.main import create_app
+from assistant_api.weather import WeatherClient
+from assistant_core.config import Settings
 from assistant_core.models import Intent, Response, Source
 
 
@@ -20,7 +21,10 @@ class FakeService:
 
 @pytest.fixture
 def client():
-    return TestClient(create_app(SimpleNamespace(), FakeService(), None))
+    weather = WeatherClient(
+        "https://example.test/forecast", 0, 0, transport=httpx.MockTransport(lambda r: httpx.Response(500))
+    )
+    return TestClient(create_app(Settings(), FakeService(), weather))
 
 
 def test_health(client):
@@ -49,7 +53,7 @@ def test_chat_empty_message_is_422_with_error_shape(client):
     r = client.post("/v1/chat", json={"message": ""})
     assert r.status_code == 422
     assert r.json()["error"]["code"] == "invalid_request"
-    assert "message" in r.json()["error"]["message"]
+    assert r.json()["error"]["message"].startswith("message:")
 
 
 def test_unknown_path_uses_error_shape(client):
