@@ -48,7 +48,8 @@ def fee_breakdown(credits, retake):
 - Implementation: only the existing service orchestration changes; no leaf-module dependency added.
 - Dependencies: none added. No LLM call, network, clock or new global state for the feature.
 - Secrets and privacy: no keys needed and no new logging. A regression test checks that the question is not logged.
-- Tests: 8 core cases plus 1 HTTP case, all offline. Full suite: **172 passed**.
+- Tests: 8 core cases plus 1 HTTP case, all offline. Initial suite: **172 passed**;
+  after integrating main with PR #26: **185 passed**.
 - Ruff check and format check pass.
 - Reviewer requested for the PR: **Hải (`NewFace819`)**. Approval and merge are separate from these local checks.
 
