@@ -20,18 +20,18 @@ The AI draft attempted to modify `models.py`, `offices.csv`, and `knowledge.py`.
 | # | What the AI generated | Problem you found | What you changed | Why |
 |---|---|---|---|---|
 | 1 | Modified `Office` in `models.py` to add `aliases: list[str] = []` and added an `aliases` column to `offices.csv`. | `models.py` is the shared domain contract. Changing `Office` alters dataclass fields across the entire monolith, breaking responder and serialization contracts. | Reverted `models.py` and `offices.csv`. Configured alias mapping internally inside `knowledge.py` as an encapsulation detail. | Preserves leaf module independence and maintains zero disruption to teammates' code. |
-| 2 | Naive substring matching: `if alias in text.lower(): return office`. | Short aliases like "it" or "pdt" caused false positives in normal English words (e.g. "it" matched in "tuition", "wait", "visit"). | Implemented tokenized word boundary checking for short aliases (length <= 3) while allowing phrase matching for longer Vietnamese names. | Avoids routing fee or rule inquiries incorrectly to `Intent.OFFICE`. |
+| 2 | Naive substring matching: `if alias in text.lower(): return office`. | Short aliases like "pdt" caused false positives in normal English words (e.g. "pdt" matched in "update"). | Implemented tokenized word boundary checking for short aliases (length <= 3) using `_matches_alias` with regex boundaries (`\b`) while allowing substring phrase matching for longer Vietnamese names. | Avoids routing fee or rule inquiries incorrectly to `Intent.OFFICE` and returning false-positive office responses. |
 | 3 | Case-sensitive and accent-sensitive string comparison. | Students frequently chat without Vietnamese accents (e.g. "phong dao tao", "thu vien"). The AI draft failed all unaccented queries. | Included canonical unaccented variants alongside accented forms directly in `OFFICE_ALIASES`. | Real-world conversational robustness on mobile and chat interfaces without requiring heavy external NLP libraries. |
 | 4 | Loaded a hardcoded JSON alias file using relative path `open("aliases.json")`. | Broke when running commands or tests from directories other than the project root; also added an unhandled `FileNotFoundError` risk. | Stored the canonical built-in alias dictionary within `knowledge.py`, cleanly encapsulated. | Fails fast, deterministic, and supports testing from any working directory. |
-| 5 | Only provided 2 trivial happy-path tests in `test_knowledge.py`. | No test coverage for unaccented text, acronyms, or non-matching queries. | Added comprehensive unit tests in `test_knowledge.py` covering accented Vietnamese, unaccented text, abbreviations (pdt, ctsv), and CLI verification. | Guards against regressions and guarantees query accuracy. |
+| 5 | Only provided 2 trivial happy-path tests in `test_knowledge.py`. | No test coverage for unaccented text, acronyms, word-boundary isolation, or empty/miss queries. | Added comprehensive unit tests in `test_knowledge.py` covering accented Vietnamese, unaccented text, abbreviations (pdt, ctsv), short alias isolation (e.g. "update" does not match "pdt"), and empty/unmatched inputs. | Guards against regressions and guarantees query accuracy. |
 
 ## 4. Checklist
 
 - **Interfaces respected?** Yes. `models.py` (`Office`, `Rule`), router contracts, and `Response` dataclasses remain completely untouched.
-- **New dependencies?** None (standard library dictionary mapping).
+- **New dependencies?** None (standard library `re`).
 - **Secrets?** None used or logged.
 - **Logging of user data?** No user text is logged.
-- **Tests added and meaningful?** Yes; verified that both English canonical names and Vietnamese aliases resolve accurately.
+- **Tests added and meaningful?** Yes; 3 distinct test suites added in `test_knowledge.py` verifying canonical names, Vietnamese aliases, word boundary isolation, and empty/unmatched queries. All 179 tests pass offline.
 
 ## 5. What I would still change
 

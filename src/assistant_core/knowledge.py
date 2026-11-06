@@ -1,5 +1,6 @@
 import csv
 import json
+import re
 from pathlib import Path
 
 from assistant_core.errors import DataError
@@ -18,6 +19,13 @@ OFFICE_ALIASES: dict[str, str] = {
     "công tác sinh viên": "student affairs",
     "ctsv": "student affairs",
 }
+
+
+def _matches_alias(text_lower: str, alias: str) -> bool:
+    """Check if alias matches text. Short abbreviations (<= 3 chars) require word boundaries."""
+    if len(alias) <= 3:
+        return bool(re.search(rf"\b{re.escape(alias)}\b", text_lower))
+    return alias in text_lower
 
 
 class OfficeDirectory:
@@ -60,7 +68,7 @@ class OfficeDirectory:
             if key in lower:
                 return office
         for alias, canonical in OFFICE_ALIASES.items():
-            if alias in lower and canonical in self._offices:
+            if canonical in self._offices and _matches_alias(lower, alias):
                 return self._offices[canonical]
         return None
 
