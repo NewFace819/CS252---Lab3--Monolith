@@ -10,7 +10,7 @@ py -3.11 -m venv .venv
 .venv\Scripts\activate          # Git Bash: source .venv/Scripts/activate
 pip install -r requirements.txt
 pip install -e .
-cp .env.example .env
+cp .env.example .env          # Lưu ý: mở .env và bỏ comment API_ADMIN_KEY=change-me để chạy curl_tests.sh kiểm tra feedback
 pytest -q                       # Lab 3 phải xanh (92 passed) trước khi làm
 ```
 

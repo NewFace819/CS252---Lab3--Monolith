@@ -12,7 +12,7 @@ FEE_WORDS = ("fee", "tuition")
 def route(text: str, office_names: set[str]) -> Intent:
     """GREETING / FEE / OFFICE, otherwise RULE (the service turns a miss into UNKNOWN)."""
     t = text.lower().strip()
-    if t in GREETINGS:
+    if t.rstrip("?!.") in GREETINGS:
         return Intent.GREETING
     if any(word in t for word in FEE_WORDS):
         return Intent.FEE
