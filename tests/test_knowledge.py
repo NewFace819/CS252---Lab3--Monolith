@@ -30,6 +30,17 @@ def test_office_directory_find_case_insensitive():
     assert office.name == "IT Helpdesk"
 
 
+def test_office_directory_find_vietnamese_and_abbreviation_aliases():
+    directory = OfficeDirectory.from_csv(DATA_DIR / "offices.csv")
+    assert directory.find("phòng đào tạo ở đâu vậy?") == directory.find("Training Office")
+    assert directory.find("cho mình hỏi pdt") == directory.find("Training Office")
+    assert directory.find("thư viện mở cửa khi nào") == directory.find("Library")
+    assert directory.find("thu vien o dau") == directory.find("Library")
+    assert directory.find("liên hệ công nghệ thông tin") == directory.find("IT Helpdesk")
+    assert directory.find("công tác sinh viên") == directory.find("Student Affairs")
+    assert directory.find("ctsv") == directory.find("Student Affairs")
+
+
 def test_office_directory_find_miss():
     directory = OfficeDirectory.from_csv(DATA_DIR / "offices.csv")
     assert directory.find("Where is the cafeteria?") is None

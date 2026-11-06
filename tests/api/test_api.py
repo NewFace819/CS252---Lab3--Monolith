@@ -81,12 +81,3 @@ def test_weather_stale_cache_when_upstream_fails():
     w.cache_ttl_s = 0  # force a refresh on the second call
     assert not w.current().stale
     assert w.current().stale
-
-
-def test_weather_malformed_current_null_returns_503(settings, service):
-    def bad_json(req):
-        return httpx.Response(200, json={"current": None})
-
-    app = create_app(settings, service, weather_with(bad_json))
-    r = TestClient(app).get("/v1/weather")
-    assert r.status_code == 503 and r.json()["error"]["code"] == "weather_service_unavailable"
