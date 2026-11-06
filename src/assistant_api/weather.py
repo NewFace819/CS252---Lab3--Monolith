@@ -81,7 +81,7 @@ class WeatherClient:
                 )
                 self._cache = (time.monotonic(), w)
                 return w
-            except (httpx.HTTPError, KeyError, ValueError) as exc:
+            except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 last_exc = exc
                 log.warning("weather attempt %d failed: %s", attempt + 1, type(exc).__name__)
                 time.sleep(0.2 * (attempt + 1))
