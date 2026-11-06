@@ -3,9 +3,14 @@
 Owner: Đức Huy (see issue). Contract below is fixed; replace the stub bodies.
 """
 
+import re
+from datetime import date, timedelta
+
 from assistant_core.errors import InvalidRequest
 
 _PUNCTUATION = str.maketrans({c: " " for c in "?!,;:"})
+_ISO_DATE = re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")
+_WORKING_DAYS = re.compile(r"within (\d+) working days?", re.IGNORECASE)
 
 
 def parse_credits(text: str) -> tuple[int, int]:
@@ -39,3 +44,36 @@ def tuition(credits: int, retake: int, rate: int, retake_multiplier: float, max_
     if retake < 0:
         raise InvalidRequest("Retake credits cannot be negative.")
     return int(credits * rate + retake * rate * retake_multiplier)
+
+
+def parse_date(text: str) -> date | None:
+    """The one valid YYYY-MM-DD date in ``text``, or None.
+
+    None if there is no valid date (2026-02-30 does not count) or several different ones, because then we cannot
+    tell which is the exam date ("Today is 2026-11-06. I missed my exam on 2026-11-02.").
+    """
+    found: set[date] = set()
+    for match in _ISO_DATE.finditer(text):
+        try:
+            found.add(date(*(int(part) for part in match.groups())))
+        except ValueError:
+            continue
+    return found.pop() if len(found) == 1 else None
+
+
+def working_days_limit(rule_text: str) -> int | None:
+    """N from 'within N working days' in a handbook rule, or None if the rule has no such limit."""
+    match = _WORKING_DAYS.search(rule_text)
+    return int(match.group(1)) if match else None
+
+
+def add_working_days(start: date, days: int) -> date:
+    """The date ``days`` working days (Mon-Fri) after ``start``. Public holidays are not counted."""
+    if days < 0:
+        raise InvalidRequest("Working days cannot be negative.")
+    current = start
+    while days > 0:
+        current += timedelta(days=1)
+        if current.weekday() < 5:
+            days -= 1
+    return current

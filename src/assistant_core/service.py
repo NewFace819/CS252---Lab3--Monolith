@@ -9,10 +9,10 @@ import time
 from assistant_core.config import Settings
 from assistant_core.errors import ConfigError, InvalidRequest, ProviderError
 from assistant_core.knowledge import Handbook, OfficeDirectory
-from assistant_core.models import Intent, Message, Response, Source
+from assistant_core.models import Intent, Message, Response, Rule, Source
 from assistant_core.responder import Responder, StubLLMResponder, TemplateResponder
 from assistant_core.router import route
-from assistant_core.tools import parse_credits, tuition
+from assistant_core.tools import add_working_days, parse_credits, parse_date, tuition, working_days_limit
 
 log = logging.getLogger("assistant_core")
 
@@ -74,9 +74,19 @@ class AssistantService:
             answer = self.responder.explain(text, rule)
         except ProviderError:
             log.warning("provider failed; using template fallback")
-            answer = self.fallback.explain(text, rule)
+            answer = _with_deadline(self.fallback.explain(text, rule), text, rule)
             return Response(answer=answer, intent=Intent.RULE, sources=sources, degraded=True)
-        return Response(answer=answer, intent=Intent.RULE, sources=sources)
+        return Response(answer=_with_deadline(answer, text, rule), intent=Intent.RULE, sources=sources)
+
+
+def _with_deadline(answer: str, text: str, rule: Rule) -> str:
+    """If the rule sets 'within N working days' and the question gives a date, add the exact deadline."""
+    days = working_days_limit(rule.text)
+    start = parse_date(text)
+    if days is None or start is None:
+        return answer
+    deadline = add_working_days(start, days)
+    return f"{answer} Deadline: {deadline:%A %Y-%m-%d} ({days} working days after {start:%Y-%m-%d})."
 
 
 def build_service(settings: Settings) -> AssistantService:
