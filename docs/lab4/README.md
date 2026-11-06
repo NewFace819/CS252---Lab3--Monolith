@@ -33,7 +33,7 @@ Mở http://127.0.0.1:8000/docs để thử endpoint. Chạy curl bằng Git Bas
 | GET | `/v1/weather` | không | thời tiết campus; site ngoài lỗi → 503 |
 | GET | `/v1/offices` (H1) | không | `[{"name","room","hours"}]` sắp theo tên |
 
-Lỗi luôn có dạng `{"error": {"code": "...", "message": "..."}}` (422 → `invalid_request`, 401 → `unauthorized`, 503 → `service_unavailable`).
+Lỗi luôn có dạng `{"error": {"code": "...", "message": "..."}}` (422 → `invalid_request`; còn lại `code` = `message` viết thường, thay dấu cách bằng `_`, ví dụ 401 → `missing_or_invalid_api_key`, 503 → `weather_service_unavailable`, 429 → `too_many_requests`, 404 → `not_found`).
 `ChatResponse` = `Response` của Lab 3 (`model_dump()`) + `request_id = uuid4().hex[:12]`. `/v1/chat` nhận `message` rồi đổi thành `Message(text=message, session_id=session_id)`.
 
 ## Phân công
@@ -99,5 +99,5 @@ P1–P5: 2 · T1–T4: 4 · ảnh `/docs` + curl: 1 · H1: 2 · H2: 1 · Bonus: 
 ## Lưu ý
 
 - Không commit `.env` hay key thật; chỉ commit `.env.example`.
-- Chưa có file starter của thầy (`lab04/starter/`). Nếu có, đối chiếu lại tên module/hàm trong bảng phân công.
-- `worksheets/external_api_failure.md` chưa có trong repo; lấy từ tài liệu Lab 4 nếu làm H3.
+- Code API đã được căn theo starter chính thức (`public_materials/lab04/starter`): chữ ký `create_app(settings, service, weather)`, schemas, `WeatherClient`, các trường `Settings` mới và `build_service` trong `assistant_core.service`. Test chính thức nằm ở `tests/api/` (đã bỏ skip của `test_rate_limit`); `api-tests/` và `worksheets/` lấy từ starter. Test Week 3 không bị sửa.
+- Chạy test API: `pytest tests/api -q`; chạy tất cả: `pytest -q`.

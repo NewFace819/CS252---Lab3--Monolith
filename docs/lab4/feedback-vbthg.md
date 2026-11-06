@@ -1,33 +1,29 @@
-# T2/T3 — Thông (vbthg)
+# Lab 4 — Thông (vbthg)
 
-## Behaviour
+## Integration with the current team API
 
-- `POST /v1/feedback` accepts the team's `FeedbackIn`, saves the feedback and returns 201 with an increasing integer id and a UTC timestamp.
-- `GET /v1/feedback` requires `X-API-Key` matching `API_ADMIN_KEY`. Missing, wrong or blank configured keys return 401 with the team's `unauthorized` error code; neither key is echoed.
-- Each app has its own in-memory store. Restarting the app discards the data, as specified for Lab 4.
-- `API_ADMIN_KEY` defaults to the tutorial's development placeholder `change-me`, loads from `.env` without overriding process variables, and is excluded from Settings repr/print. No real key is committed.
+PR #19 supplies the shared T2/T3 implementation in `src/assistant_api/main.py` and configuration in `assistant_core/config.py`. This branch uses that implementation directly; it does not register a second feedback router or change the shared schemas.
 
-## Shared contract: explicitly retained
+- `create_app(settings, service, weather)` accepts the same dependencies as the official starter.
+- `POST /v1/feedback` returns 201 with an increasing id and UTC timestamp. `request_id` is 1–64 characters; `rating` is -1, 0 or 1; `comment` is optional/null with a 500-character maximum.
+- `GET /v1/feedback` requires a configured `API_ADMIN_KEY` and matching `X-API-Key`; 401 uses `missing_or_invalid_api_key`. The admin key defaults to `None`, disabling access until configured. The commented `change-me` example is only a development placeholder.
+- Feedback is kept per application and discarded on restart, as specified for Lab 4.
 
-At Thông's direction, this PR leaves Hải's `schemas.py` unchanged. Compared with the official starter:
+## Additional checks and individual work
 
-| Field | Current team schema | Official starter |
-|---|---|---|
-| `FeedbackIn.request_id` | nonempty, no upper limit | 1–64 characters |
-| `FeedbackIn.comment` | string, default empty string, no upper limit | optional string / null, default null, maximum 500 characters |
+- `tests/api/test_feedback_vbthg.py`: all three ratings and UTC timestamps, omitted/null comments, boundary lengths, invalid input not saved, secret-free auth errors, disabled keys and per-app data isolation. External weather is mocked.
+- `tests/api/test_config_vbthg.py`: API defaults/environment fields, dotenv precedence, blank keys, secret-free repr and invalid numeric input. The original Week 3 tests stay unchanged.
+- `lab04/practice/vbthg/`: P1–P5 with the five official practice checks. Run explicitly because the team's default pytest collection is limited to `tests/`.
+- `reflection-vbthg.md`: H2 draft awaiting Thông's review/revision before submission.
 
-Consequently, oversized request ids/comments remain accepted and an explicit `comment: null` is rejected with 422. This is a documented difference, not a claim of exact starter compatibility. Any later shared-contract change belongs in a coordinated change with Hải.
+## Verify
 
-## Individual work
+```bash
+python -m pytest -q
+python -m pytest lab04/practice/vbthg -q
+python -m ruff check .
+python -m ruff format --check .
+git diff --check
+```
 
-- P1–P5: `lab04/practice/vbthg/`, using the five official checks. The relative import and package marker allow teammates to keep identically named practice files without test collection collisions.
-- H2: `reflection-vbthg.md` is an AI-assisted draft awaiting Thông's own review/revision. It is not represented as a completed personal submission.
-
-## Validation
-
-- Python 3.12 locally, using the exact versions in `requirements.txt`; CI uses Python 3.11.
-- `python -m pytest -q`: 126 passed (including the five practice tests, after integrating main's offices and rate limiter).
-- `python -m ruff check .`, `python -m ruff format --check .`, `git diff --check`: passed.
-- HTTP smoke check against a running uvicorn app: see PR validation details.
-
-Full-team curl checks, the final `/docs` screenshot and `v0.4-api` tag remain team integration tasks. This PR does not implement teammates' weather, offices or bonus tasks.
+For manual integration checks, configure a local `API_ADMIN_KEY`, start uvicorn and run the team's `api-tests/curl_tests.sh` in Git Bash. No real key is committed. Final release tagging and LMS submission remain team tasks.

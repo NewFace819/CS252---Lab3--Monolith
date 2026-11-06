@@ -1,81 +1,96 @@
-"""FastAPI app factory: ``uvicorn assistant_api.main:create_app --factory``.
+"""FastAPI application — Lab 4.  Run:  uvicorn assistant_api.main:create_app --factory --reload
 
-Owner: Hải. Other members add their router with one ``include_router`` line below.
+Built on the official lab04 starter; T1–T4, the bonus rate limit (Part F) and H1 (/v1/offices) are completed.
+
+Endpoints (v1): GET /health, POST /v1/chat, POST /v1/feedback, GET /v1/feedback (admin), GET /v1/weather,
+GET /v1/offices
 """
 
-import uuid
+from __future__ import annotations
 
-from fastapi import FastAPI, Request
+import uuid
+from datetime import datetime, timezone
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from assistant_api.feedback import router as feedback_router
 from assistant_api.offices import router as offices_router
 from assistant_api.ratelimit import RateLimiter
-from assistant_api.schemas import ChatRequest, ChatResponse
-from assistant_core.__main__ import build_service
-from assistant_core.config import load_settings
-from assistant_core.models import Message
-
-API_VERSION = "1.0.0"
-
-ERROR_CODES = {
-    401: "unauthorized",
-    404: "not_found",
-    422: "invalid_request",
-    429: "too_many_requests",
-    503: "service_unavailable",
-}
+from assistant_api.schemas import ChatRequest, ChatResponse, ErrorResponse, FeedbackIn, FeedbackOut, Weather
+from assistant_api.weather import ExternalServiceError, WeatherClient
+from assistant_core import AssistantService, Message, build_service
+from assistant_core.config import Settings, load_settings
 
 
-def error(status_code: int, code: str, message: str) -> JSONResponse:
-    """Every error looks the same: {"error": {"code": ..., "message": ...}}."""
-    return JSONResponse(status_code=status_code, content={"error": {"code": code, "message": message}})
+def create_app(
+    settings: Settings | None = None, service: AssistantService | None = None, weather: WeatherClient | None = None
+) -> FastAPI:
+    settings = settings or load_settings()
+    service = service or build_service(settings)
+    weather = weather or WeatherClient(
+        settings.weather_url, settings.campus_lat, settings.campus_lon, timeout_s=settings.weather_timeout_s
+    )
+    limiter = RateLimiter(settings.rate_limit_per_min)
+    feedback_store: list[FeedbackOut] = []  # Lab 5 replaces this with a database
 
+    app = FastAPI(
+        title="Study Assistant API", version="1.0.0", description="Backend of the CSC10014 Smart Virtual Assistant."
+    )
+    app.state.service = service  # read by the /v1/offices router
 
-def create_app(settings=None, service=None, weather_client=None, rate_limiter=None) -> FastAPI:
-    """Build the app. Tests pass fakes; uvicorn --factory passes nothing and gets the real parts."""
-    if settings is None:
-        settings = load_settings()
-    if service is None:
-        service = build_service(settings)
-    if rate_limiter is None:
-        rate_limiter = RateLimiter()
-
-    app = FastAPI(title="Study Assistant API", version=API_VERSION)
-    app.state.settings = settings
-    app.state.service = service
-    app.state.weather_client = weather_client
-    app.state.feedback_store = []  # Per-app, in-memory storage; Lab 5 adds persistence.
-    app.state.rate_limiter = rate_limiter
-
-    # Starlette's class also covers the router's own 404 / 405, not only our raised HTTPException.
-    @app.exception_handler(StarletteHTTPException)
-    async def http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
-        code = ERROR_CODES.get(exc.status_code, "http_error")
-        return error(exc.status_code, code, str(exc.detail))
+    def error(code: int, key: str, message: str) -> JSONResponse:
+        return JSONResponse(status_code=code, content={"error": {"code": key, "message": message}})
 
     @app.exception_handler(RequestValidationError)
-    async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+    async def on_validation(_: Request, exc: RequestValidationError):
         first = exc.errors()[0]
-        field = ".".join(str(part) for part in first["loc"] if part != "body")
+        field = ".".join(str(p) for p in first["loc"][1:]) or "body"
         return error(422, "invalid_request", f"{field}: {first['msg']}")
 
-    @app.get("/health")
-    def health() -> dict:
-        return {"status": "ok", "version": API_VERSION}
+    # Starlette's class is the parent of FastAPI's, so this also covers the router's own 404 / 405.
+    @app.exception_handler(StarletteHTTPException)
+    async def on_http(_: Request, exc: StarletteHTTPException):
+        return error(exc.status_code, str(exc.detail).lower().replace(" ", "_"), str(exc.detail))
 
-    @app.post("/v1/chat")
+    def require_admin(x_api_key: str | None = Header(default=None)) -> None:
+        if not settings.api_admin_key or x_api_key != settings.api_admin_key:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing or invalid API key")
+
+    @app.get("/health", tags=["ops"])
+    def health() -> dict:
+        return {"status": "ok", "version": app.version}
+
+    @app.post(
+        "/v1/chat",
+        response_model=ChatResponse,
+        tags=["chat"],
+        responses={422: {"model": ErrorResponse}, 429: {"model": ErrorResponse}},
+    )
     def chat(req: ChatRequest, request: Request) -> ChatResponse:
-        client_id = request.client.host if request.client else "unknown"
-        limiter = getattr(request.app.state, "rate_limiter", None)
-        if limiter is not None and not limiter.allow(client_id):
-            raise StarletteHTTPException(429, "Rate limit exceeded")
-        resp = request.app.state.service.handle(Message(text=req.message, session_id=req.session_id))
+        client = request.client.host if request.client else "unknown"
+        if not limiter.allow(client):
+            raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Too many requests")
+        resp = service.handle(Message(text=req.message, session_id=req.session_id))
         return ChatResponse(**resp.model_dump(), request_id=uuid.uuid4().hex[:12])
 
-    app.include_router(feedback_router)  # Thông  — T2/T3
-    # app.include_router(weather_router)    # Đức Huy — T4
-    app.include_router(offices_router)
+    @app.post("/v1/feedback", response_model=FeedbackOut, status_code=201, tags=["feedback"])
+    def add_feedback(fb: FeedbackIn) -> FeedbackOut:
+        item = FeedbackOut(**fb.model_dump(), id=len(feedback_store) + 1, created_at=datetime.now(timezone.utc))
+        feedback_store.append(item)
+        return item
+
+    @app.get("/v1/feedback", response_model=list[FeedbackOut], tags=["feedback"], dependencies=[Depends(require_admin)])
+    def list_feedback() -> list[FeedbackOut]:
+        return feedback_store
+
+    @app.get("/v1/weather", response_model=Weather, tags=["external"], responses={503: {"model": ErrorResponse}})
+    def campus_weather() -> Weather:
+        try:
+            return weather.current()
+        except ExternalServiceError:
+            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Weather service unavailable") from None
+
+    app.include_router(offices_router)  # H1: GET /v1/offices
     return app

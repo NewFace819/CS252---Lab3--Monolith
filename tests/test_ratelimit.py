@@ -3,12 +3,11 @@
 Owner: Gia Huy.
 """
 
-from types import SimpleNamespace
-
 from fastapi.testclient import TestClient
 
 from assistant_api.main import create_app
 from assistant_api.ratelimit import RateLimiter
+from assistant_core.config import Settings
 from assistant_core.models import Intent, Response
 
 
@@ -29,8 +28,7 @@ def test_rate_limiter_unit():
 
 
 def test_rate_limit_exceeded_returns_429():
-    limiter = RateLimiter(max_requests=2, window_seconds=60.0)
-    app = create_app(settings=SimpleNamespace(), service=FakeService(), rate_limiter=limiter)
+    app = create_app(Settings(rate_limit_per_min=2), FakeService())
     client = TestClient(app)
 
     r1 = client.post("/v1/chat", json={"message": "msg 1"})
@@ -43,4 +41,4 @@ def test_rate_limit_exceeded_returns_429():
     assert r3.status_code == 429
     err = r3.json()["error"]
     assert err["code"] == "too_many_requests"
-    assert "Rate limit exceeded" in err["message"]
+    assert err["message"] == "Too many requests"

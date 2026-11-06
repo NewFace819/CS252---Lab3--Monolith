@@ -7,25 +7,11 @@ import sys
 
 from pydantic import ValidationError
 
-from assistant_core.config import Settings, load_settings
+from assistant_core.config import load_settings
 from assistant_core.errors import ConfigError, DataError
-from assistant_core.knowledge import Handbook, OfficeDirectory
 from assistant_core.logging_setup import setup_logging
 from assistant_core.models import Message
-from assistant_core.responder import Responder, StubLLMResponder, TemplateResponder
-from assistant_core.service import AssistantService
-
-RESPONDERS: dict[str, type[Responder]] = {"stub": StubLLMResponder, "template": TemplateResponder}
-
-
-def build_service(settings: Settings) -> AssistantService:
-    """Wire every module together. Raises ConfigError / DataError at startup."""
-    responder_cls = RESPONDERS.get(settings.llm_provider)
-    if responder_cls is None:
-        raise ConfigError(f"LLM_PROVIDER={settings.llm_provider!r} is not supported yet (Week 4).")
-    offices = OfficeDirectory.from_csv(settings.data_dir / "offices.csv")
-    handbook = Handbook.from_json(settings.data_dir / "handbook.json")
-    return AssistantService(settings, offices, handbook, responder_cls())
+from assistant_core.service import AssistantService, build_service
 
 
 def ask(service: AssistantService, text: str) -> str:

@@ -13,7 +13,6 @@ VARIABLES = (
     "RETAKE_MULTIPLIER",
     "MAX_CREDITS",
     "LOG_LEVEL",
-    "API_ADMIN_KEY",
 )
 
 
@@ -34,11 +33,10 @@ def test_defaults_without_env_file():
     assert settings.retake_multiplier == 1.5
     assert settings.max_credits == 30
     assert settings.log_level == "INFO"
-    assert settings.api_admin_key == "change-me"
 
 
 def test_all_environment_fields(monkeypatch, tmp_path):
-    values = [str(tmp_path), "provider", "test-only-key", "500000", "2.0", "24", "debug", "test-admin-key"]
+    values = [str(tmp_path), "provider", "test-only-key", "500000", "2.0", "24", "debug"]
     for name, value in zip(VARIABLES, values, strict=True):
         monkeypatch.setenv(name, value)
     settings = load_settings(None)
@@ -49,7 +47,6 @@ def test_all_environment_fields(monkeypatch, tmp_path):
     assert settings.retake_multiplier == 2.0
     assert settings.max_credits == 24
     assert settings.log_level == "DEBUG"
-    assert settings.api_admin_key == "test-admin-key"
 
 
 def test_dotenv_loads_but_does_not_override_process(monkeypatch, tmp_path):
@@ -116,27 +113,3 @@ def test_example_documents_all_variables():
     entries = dict(line.split("=", 1) for line in example.read_text().splitlines() if line and not line.startswith("#"))
     assert set(entries) == set(VARIABLES)
     assert entries["LLM_API_KEY"] == ""
-    assert entries["API_ADMIN_KEY"] == "change-me"
-
-
-def test_admin_key_from_dotenv_and_process_precedence(monkeypatch, tmp_path):
-    env_file = tmp_path / ".env"
-    env_file.write_text("API_ADMIN_KEY=test-dotenv-admin\n", encoding="utf-8")
-    assert load_settings(str(env_file)).api_admin_key == "test-dotenv-admin"
-    monkeypatch.setenv("API_ADMIN_KEY", "test-process-admin")
-    assert load_settings(str(env_file)).api_admin_key == "test-process-admin"
-
-
-def test_admin_key_is_trimmed_and_not_printed(monkeypatch, capsys):
-    key = "test-only-admin-secret"
-    monkeypatch.setenv("API_ADMIN_KEY", f"  {key}  ")
-    settings = load_settings(None)
-    assert settings.api_admin_key == key
-    assert key not in repr(settings)
-    print(settings)
-    assert key not in capsys.readouterr().out
-
-
-def test_blank_admin_key_stays_disabled(monkeypatch):
-    monkeypatch.setenv("API_ADMIN_KEY", "   ")
-    assert load_settings(None).api_admin_key == ""

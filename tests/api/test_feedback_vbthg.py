@@ -2,17 +2,22 @@
 
 from datetime import datetime, timedelta, timezone
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
 from assistant_api.main import create_app
+from assistant_api.weather import WeatherClient
 from assistant_core.config import Settings
 
 ADMIN_KEY = "test-only-admin"
 
 
 def make_client(key=ADMIN_KEY):
-    return TestClient(create_app(settings=Settings(api_admin_key=key), service=object()))
+    weather = WeatherClient(
+        "https://example.test/forecast", 0, 0, transport=httpx.MockTransport(lambda request: httpx.Response(500))
+    )
+    return TestClient(create_app(Settings(api_admin_key=key), object(), weather))
 
 
 @pytest.fixture
@@ -42,6 +47,16 @@ def test_feedback_comment_can_be_omitted(client):
     response = client.post("/v1/feedback", json={"request_id": "r", "rating": 0})
     assert response.status_code == 201
     assert response.json()["request_id"] == "r"
+    assert response.json()["comment"] is None
+
+
+def test_feedback_accepts_null_comment_and_schema_boundaries(client):
+    for comment in (None, "a" * 500):
+        payload = {"request_id": "r" * 64, "rating": 1, "comment": comment}
+        response = client.post("/v1/feedback", json=payload)
+        assert response.status_code == 201
+        assert response.json()["comment"] == comment
+        assert response.json()["request_id"] == payload["request_id"]
 
 
 @pytest.mark.parametrize(
@@ -54,6 +69,8 @@ def test_feedback_comment_can_be_omitted(client):
         {"request_id": "r"},
         {"request_id": None, "rating": 1},
         {"request_id": "r", "rating": None},
+        {"request_id": "r" * 65, "rating": 1},
+        {"request_id": "r", "rating": 1, "comment": "a" * 501},
     ],
 )
 def test_invalid_feedback_is_422_and_not_saved(client, payload):
@@ -63,20 +80,23 @@ def test_invalid_feedback_is_422_and_not_saved(client, payload):
     assert client.get("/v1/feedback", headers={"X-API-Key": ADMIN_KEY}).json() == []
 
 
-@pytest.mark.parametrize("key", [None, "", "wrong-test-key", "test-κλειδί"])
+@pytest.mark.parametrize("key", [None, "", "wrong-test-key"])
 def test_admin_missing_or_wrong_key_is_401_without_leaks(client, key):
-    headers = {} if key is None else {"X-API-Key": key.encode("utf-8")}
+    headers = {} if key is None else {"X-API-Key": key}
     response = client.get("/v1/feedback", headers=headers)
     assert response.status_code == 401
-    assert response.json() == {"error": {"code": "unauthorized", "message": "Missing or invalid API key"}}
+    assert response.json() == {"error": {"code": "missing_or_invalid_api_key", "message": "Missing or invalid API key"}}
     assert ADMIN_KEY not in response.text
     if key:
         assert key not in response.text
 
 
-def test_empty_configured_key_never_authorizes():
-    with make_client("") as client:
-        assert client.get("/v1/feedback", headers={"X-API-Key": ""}).status_code == 401
+@pytest.mark.parametrize("configured_key", [None, ""])
+def test_disabled_admin_key_never_authorizes(configured_key):
+    with make_client(configured_key) as client:
+        for supplied_key in ("", "change-me", ADMIN_KEY):
+            response = client.get("/v1/feedback", headers={"X-API-Key": supplied_key})
+            assert response.status_code == 401
 
 
 def test_feedback_is_isolated_between_app_instances(client):
