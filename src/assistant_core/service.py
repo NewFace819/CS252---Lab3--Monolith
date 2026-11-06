@@ -63,7 +63,12 @@ class AssistantService:
             total = tuition(credits, retake, s.credit_rate_vnd, s.retake_multiplier, s.max_credits)
         except InvalidRequest as exc:
             return Response(answer=str(exc), intent=Intent.FEE)
-        return Response(answer=f"Your tuition is {total:,} VND.", intent=Intent.FEE)
+        answer = f"Your tuition is {total:,} VND."
+        if "breakdown" in text.lower().split():
+            regular = credits * s.credit_rate_vnd
+            # Derive the retake portion from the validated total: same rounding as tuition().
+            answer += f" Regular: {regular:,} VND; retake: {total - regular:,} VND."
+        return Response(answer=answer, intent=Intent.FEE)
 
     def _rule(self, text: str) -> Response:
         rule = self.handbook.search(text)
