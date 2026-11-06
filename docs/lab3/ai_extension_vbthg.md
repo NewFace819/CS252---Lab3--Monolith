@@ -57,4 +57,3 @@ def fee_breakdown(credits, retake):
 Thông confirmed reading the completed review on 2026-11-06. Codex assisted with
 the implementation, review improvements, tests and documentation; see the
 [AI use log](../ai-use-log.md).
-
