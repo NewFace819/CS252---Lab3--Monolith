@@ -1,9 +1,31 @@
 import csv
 import json
+import re
 from pathlib import Path
 
 from assistant_core.errors import DataError
 from assistant_core.models import Office, Rule
+
+# Canonical office name aliases for Vietnamese and common abbreviations.
+OFFICE_ALIASES: dict[str, str] = {
+    "phong dao tao": "training office",
+    "phòng đào tạo": "training office",
+    "pdt": "training office",
+    "thu vien": "library",
+    "thư viện": "library",
+    "cong nghe thong tin": "it helpdesk",
+    "công nghệ thông tin": "it helpdesk",
+    "cong tac sinh vien": "student affairs",
+    "công tác sinh viên": "student affairs",
+    "ctsv": "student affairs",
+}
+
+
+def _matches_alias(text_lower: str, alias: str) -> bool:
+    """Check if alias matches text. Short abbreviations (<= 3 chars) require word boundaries."""
+    if len(alias) <= 3:
+        return bool(re.search(rf"\b{re.escape(alias)}\b", text_lower))
+    return alias in text_lower
 
 
 class OfficeDirectory:
@@ -32,19 +54,22 @@ class OfficeDirectory:
 
     @property
     def names(self) -> set[str]:
-        """Lower-case office names, used by the router."""
-        return set(self._offices.keys())
+        """Lower-case office names and aliases, used by the router."""
+        return set(self._offices.keys()) | set(OFFICE_ALIASES.keys())
 
     def all(self) -> list[Office]:
         """All offices sorted by name."""
         return sorted(self._offices.values(), key=lambda office: office.name)
 
     def find(self, text: str) -> Office | None:
-        """First office whose name appears in ``text`` (case-insensitive)."""
+        """First office whose name or alias appears in ``text`` (case-insensitive)."""
         lower = text.lower()
         for key, office in self._offices.items():
             if key in lower:
                 return office
+        for alias, canonical in OFFICE_ALIASES.items():
+            if canonical in self._offices and _matches_alias(lower, alias):
+                return self._offices[canonical]
         return None
 
 

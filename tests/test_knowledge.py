@@ -30,6 +30,39 @@ def test_office_directory_find_case_insensitive():
     assert office.name == "IT Helpdesk"
 
 
+def test_office_directory_find_vietnamese_and_abbreviation_aliases():
+    directory = OfficeDirectory.from_csv(DATA_DIR / "offices.csv")
+    # Accented Vietnamese
+    assert directory.find("phòng đào tạo ở đâu vậy?") == directory.find("Training Office")
+    assert directory.find("thư viện mở cửa khi nào") == directory.find("Library")
+    assert directory.find("liên hệ công nghệ thông tin") == directory.find("IT Helpdesk")
+    assert directory.find("công tác sinh viên") == directory.find("Student Affairs")
+    # Unaccented Vietnamese
+    assert directory.find("phong dao tao o dau") == directory.find("Training Office")
+    assert directory.find("thu vien o dau") == directory.find("Library")
+    assert directory.find("cong nghe thong tin") == directory.find("IT Helpdesk")
+    assert directory.find("cong tac sinh vien") == directory.find("Student Affairs")
+    # Abbreviations with word boundaries
+    assert directory.find("cho mình hỏi pdt") == directory.find("Training Office")
+    assert directory.find("pdt ở phòng nào") == directory.find("Training Office")
+    assert directory.find("liên hệ ctsv") == directory.find("Student Affairs")
+
+
+def test_office_directory_find_short_alias_word_boundary_isolation():
+    """Verify that short aliases like 'pdt' do not trigger false-positive matches inside words like 'update'."""
+    directory = OfficeDirectory.from_csv(DATA_DIR / "offices.csv")
+    assert directory.find("cần update thông tin môn học") is None
+    assert directory.find("vui lòng update lịch thi") is None
+
+
+def test_office_directory_find_empty_and_unmatched():
+    directory = OfficeDirectory.from_csv(DATA_DIR / "offices.csv")
+    assert directory.find("") is None
+    assert directory.find("   ") is None
+    assert directory.find("Where is the cafeteria?") is None
+    assert directory.find("tuition for 18 credits") is None
+
+
 def test_office_directory_find_miss():
     directory = OfficeDirectory.from_csv(DATA_DIR / "offices.csv")
     assert directory.find("Where is the cafeteria?") is None

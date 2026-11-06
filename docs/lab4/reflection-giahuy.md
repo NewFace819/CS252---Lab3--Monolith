@@ -1,7 +1,7 @@
-# H2 Reflection — Đỗ Gia Huy (Group 01)
+# H2 — Reflection (Đỗ Gia Huy)
 
-1. Việc chuyển đổi từ monolith CLI sang REST API bằng FastAPI giúp tách biệt rõ ràng giữa core domain logic và web delivery layer.
-2. Việc thiết kế `OfficeDirectory.all()` trong `assistant_core.knowledge` giúp endpoint `GET /v1/offices` tái sử dụng dữ liệu sạch mà không phá vỡ module leaf boundary.
-3. Nhờ chuẩn hóa Exception Handling và App Factory (`create_app`), các router thành viên (như `offices_router`) dễ dàng plug-and-play vào `main.py` chỉ với một dòng `include_router`.
-4. Việc thêm tính năng Rate Limiting bảo vệ endpoint `/v1/chat` khỏi spam request và chuẩn hóa mã lỗi HTTP 429 đúng với spec lỗi chung của cả nhóm.
-5. Quy trình phân công nhiệm vụ và TDD song song giúp nhóm làm việc độc lập hiệu quả trên các nhánh feature mà không bị conflict.
+1. Ở Lab 3, việc gọi `service.handle(msg)` là lời gọi hàm trực tiếp trong bộ nhớ (in-process function call): client bắt buộc phải chạy trong môi trường Python và phụ thuộc chặt chẽ vào mã nguồn nội bộ của package `assistant_core`.
+2. Ở Lab 4, client giao tiếp qua giao thức HTTP bằng request `POST /v1/chat` với payload JSON: FastAPI đóng vai trò boundary tiếp nhận, kiểm tra tính hợp lệ của dữ liệu trước khi chuyển tiếp cho `service.handle()`, và đóng gói kết quả phản hồi kèm `request_id` để định danh phiên làm việc.
+3. Nhóm lựa chọn cung cấp API qua HTTP vì chuẩn REST/JSON mang tính đa nền tảng (interoperability): bất kỳ client nào (từ ứng dụng di động, giao diện web, đến các microservice viết bằng ngôn ngữ khác) đều có thể tích hợp và sử dụng trợ lý mà không cần quan tâm chi tiết triển khai phía server.
+4. Kiến trúc web service cho phép phân tách độc lập chu kỳ phát triển (decoupling) giữa frontend và backend, đồng thời cho phép nhóm tập trung kiểm soát các chính sách hạ tầng như xác thực quản trị (`X-API-Key`) và bảo vệ chống lạm dụng (`RateLimiter` trả về HTTP 429) ngay tại tầng API gateway.
+5. Sự linh hoạt của mô hình mạng đi kèm với chi phí quản lý lỗi phân tán: request có thể gặp độ trễ mạng, timeout hoặc dịch vụ bên thứ ba bị sập (như Open-Meteo). Điều này đòi hỏi hệ thống phải tuân thủ nghiêm ngặt chuẩn cấu trúc lỗi chung `{"error": {"code", "message"}}`, thiết lập timeout hợp lý, cơ chế retry và giải pháp fallback sử dụng dữ liệu cache cũ.
