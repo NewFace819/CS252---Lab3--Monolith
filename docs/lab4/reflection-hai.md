@@ -1,7 +1,7 @@
 # H2 — Reflection (Võ Thanh Hải)
 
-1. In Lab 3, `service.handle()` is a normal Python call inside one process: the caller must be Python code that has installed `assistant_core`.
-2. In Lab 4, `POST /v1/chat` receives JSON over the network, FastAPI validates it (an empty message gives 422), and then the same `service.handle()` runs; the result comes back as JSON plus a `request_id`.
-3. A team may prefer the HTTP version because a browser, a phone app or a program in another language can all use one assistant through one contract, without knowing Python.
-4. The UI, the tests and other services can be built and deployed separately, and the API can add access control (API key) and limits (rate limit) in one place.
-5. The price is new failure modes — timeouts, a down service, bad input — which is why every error has the same shape and why outside services need a timeout, a retry and a backup plan.
+1. Ở Lab 3, mình gọi `service.handle(Message(...))` như một hàm Python bình thường: người gọi phải là code Python trong cùng tiến trình và đã cài `assistant_core`, kết quả là một object `Response`.
+2. Ở Lab 4, người gọi chỉ cần gửi `POST /v1/chat` kèm JSON qua mạng. FastAPI kiểm tra dữ liệu trước (message rỗng thì trả 422 ngay, `handle()` không chạy), rồi mới gọi đúng `service.handle()` cũ và trả JSON, thêm `request_id` để sau này gắn feedback.
+3. Nhóm nên chọn bản HTTP vì trình duyệt, app điện thoại hay chương trình viết bằng ngôn ngữ khác đều dùng chung một trợ lý qua một hợp đồng (đường dẫn, JSON, mã trạng thái), không cần biết bên trong là Python.
+4. Giao diện, test và các dịch vụ khác có thể làm và triển khai riêng. Những thứ như khóa API cho `GET /v1/feedback` hay giới hạn 429 chỉ cần đặt một chỗ ở API, không phải sửa trong từng client.
+5. Đổi lại sẽ có thêm lỗi mới như dữ liệu sai, API ngoài chậm hoặc sập (503). Vì vậy mọi lỗi dùng chung một dạng `{"error": {"code", "message"}}`, và khi gọi dịch vụ ngoài như thời tiết phải có timeout, thử lại một lần và dữ liệu cũ để dự phòng.
