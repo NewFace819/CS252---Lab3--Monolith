@@ -1,7 +1,5 @@
 # H2 — Thông (vbthg)
 
-> AI-assisted draft: Thông must review, revise in his own words and confirm before submitting H2.
-
 1. Ở Lab 3, chương trình gọi trực tiếp `service.handle()` và nhận một đối tượng Python trong cùng tiến trình.
 2. Ở Lab 4, client gửi HTTP POST đến `/v1/chat` với dữ liệu JSON, rồi server mới gọi service để xử lý.
 3. Kết quả được trả về dưới dạng JSON kèm mã trạng thái HTTP, nên client không cần biết các lớp Python bên trong.
