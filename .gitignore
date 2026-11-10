@@ -18,3 +18,6 @@ history.txt
 
 # Editor
 .vs/
+
+# Lab 5 — local SQLite databases (assistant.db, school.db)
+*.db

@@ -41,11 +41,13 @@ def test_feedback_list_wrong_key_is_401(client):
 
 
 def test_feedback_ids_increase_and_are_listed(client):
-    first = client.post("/v1/feedback", json={"request_id": "r1", "rating": 1}).json()
-    second = client.post("/v1/feedback", json={"request_id": "r2", "rating": -1}).json()
+    # Lab 5: feedback must point at a real answer, so chat first to get two request ids.
+    r1, r2 = (client.post("/v1/chat", json={"message": "hi"}).json()["request_id"] for _ in range(2))
+    first = client.post("/v1/feedback", json={"request_id": r1, "rating": 1}).json()
+    second = client.post("/v1/feedback", json={"request_id": r2, "rating": -1}).json()
     assert second["id"] == first["id"] + 1
     ids = [item["request_id"] for item in client.get("/v1/feedback", headers=ADMIN).json()]
-    assert "r1" in ids and "r2" in ids
+    assert r1 in ids and r2 in ids
 
 
 def test_unknown_route_uses_error_shape(client):
