@@ -9,9 +9,9 @@ Tôi không chọn "giờ cao điểm nhất" vì dữ liệu seed được tạ
 
 ## Vì sao hữu ích
 
-- Một câu trả lời `degraded` là câu trả lời mà trợ lý không dùng được nguồn chính nên phải trả lời theo cách dự phòng (xem `service.py`). Tỉ lệ này cho biết phần nào của trợ lý đang "yếu" ngay cả khi người dùng chưa kịp bấm thumbs-down.
-- Người hành động: người phụ trách nội dung/quy định (staff) kiểm tra lại các rule có tỉ lệ cao (nguồn thiếu, quy tắc khó khớp) và thành viên backend xem xét timeout/retry của phần gọi dịch vụ ngoài. Họ có một danh sách ưu tiên cụ thể thay vì phải đoán.
-- Khác với F2, ở đây ta so sánh theo topic, nên chỉ ra được *rule nào* cần sửa, không chỉ *intent nào* chậm.
+- Một câu trả lời `degraded` là câu trả lời mà trợ lý đã tìm được đúng rule nhưng lời giải thích từ nhà cung cấp AI (`responder.explain`) bị lỗi (`ProviderError`), nên phải trả lời bằng mẫu dự phòng (`fallback`), xem `src/assistant_core/service.py` (`_rule`). Người dùng vẫn nhận được câu trả lời nhưng kém tự nhiên hơn, nên tỉ lệ này cho thấy chất lượng đang giảm ngay cả khi chưa ai bấm thumbs-down.
+- Người hành động: thành viên backend dùng bảng này để quyết định có cần thêm timeout/retry hay đổi nhà cung cấp không, và ưu tiên kiểm tra các rule có tỉ lệ cao trước (ví dụ rule có nội dung dài khiến lời gọi AI dễ quá thời gian). Rule không khớp thì không nằm ở đây: trường hợp đó trả về intent `unknown`.
+- Khác với F2, ở đây ta so sánh theo topic, nên chỉ ra được lỗi đường lui tập trung ở *rule nào*, không chỉ *intent nào* chậm.
 
 ## Câu SQL
 
