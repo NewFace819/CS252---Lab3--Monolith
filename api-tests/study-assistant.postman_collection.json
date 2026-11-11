@@ -439,7 +439,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"weather (200, or 503 if upstream down): status is 200\", function () { pm.response.to.have.status(200); });"
+              "pm.test(\"weather (200, or 503 if upstream down): status is 200 or 503\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 503]); });"
             ]
           }
         }
