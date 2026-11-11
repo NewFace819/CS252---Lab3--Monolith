@@ -11,11 +11,26 @@
     {
       "key": "admin_key",
       "value": "change-me"
+    },
+    {
+      "key": "request_id",
+      "value": ""
     }
   ],
   "item": [
     {
       "name": "health",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"health: status is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -31,7 +46,21 @@
       }
     },
     {
-      "name": "chat - fee",
+      "name": "chat - fee (saves request_id)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"chat - fee (saves request_id): status is 200\", function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.test(\"response has request_id\", function () { pm.expect(data.request_id).to.be.a(\"string\").and.not.empty; });",
+              "pm.collectionVariables.set(\"request_id\", data.request_id);"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -58,6 +87,17 @@
     },
     {
       "name": "chat - rule",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"chat - rule: status is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -84,6 +124,17 @@
     },
     {
       "name": "chat - empty (422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"chat - empty (422): status is 422\", function () { pm.response.to.have.status(422); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -109,7 +160,55 @@
       }
     },
     {
-      "name": "feedback - add",
+      "name": "chat - wrong type (422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"chat - wrong type (422): status is 422\", function () { pm.response.to.have.status(422); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/v1/chat",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "v1",
+            "chat"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"message\": 123}"
+        }
+      }
+    },
+    {
+      "name": "feedback - real request_id (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"feedback - real request_id (201): status is 201\", function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -130,12 +229,125 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\"request_id\": \"abc123\", \"rating\": 1}"
+          "raw": "{\"request_id\": \"{{request_id}}\", \"rating\": 1, \"comment\": \"clear answer\"}"
         }
       }
     },
     {
-      "name": "feedback - list (admin)",
+      "name": "feedback - unknown request_id (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"feedback - unknown request_id (404): status is 404\", function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/v1/feedback",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "v1",
+            "feedback"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"request_id\": \"nope\", \"rating\": 1}"
+        }
+      }
+    },
+    {
+      "name": "feedback - bad rating (422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"feedback - bad rating (422): status is 422\", function () { pm.response.to.have.status(422); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/v1/feedback",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "v1",
+            "feedback"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"request_id\": \"{{request_id}}\", \"rating\": 7}"
+        }
+      }
+    },
+    {
+      "name": "feedback - list, no key (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"feedback - list, no key (401): status is 401\", function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/v1/feedback",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "v1",
+            "feedback"
+          ]
+        }
+      }
+    },
+    {
+      "name": "feedback - list, admin key (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"feedback - list, admin key (200): status is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [
@@ -157,7 +369,81 @@
       }
     },
     {
-      "name": "weather",
+      "name": "stats intents - no key (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"stats intents - no key (401): status is 401\", function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/v1/stats/intents",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "v1",
+            "stats",
+            "intents"
+          ]
+        }
+      }
+    },
+    {
+      "name": "stats intents - admin key (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"stats intents - admin key (200): status is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{admin_key}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/v1/stats/intents",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "v1",
+            "stats",
+            "intents"
+          ]
+        }
+      }
+    },
+    {
+      "name": "weather (200, or 503 if upstream down)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"weather (200, or 503 if upstream down): status is 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
