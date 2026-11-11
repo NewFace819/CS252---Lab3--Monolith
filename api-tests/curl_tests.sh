@@ -11,14 +11,14 @@ ADMIN="${API_ADMIN_KEY:-change-me}"
 PASS=0; FAIL=0
 hr() { echo; echo "== $1"; }
 
-# run <label> <expected-status> <curl args...>  -> prints body, expected vs actual; sets BODY
+# run <label> <expected-status[|alt]> <curl args...>  -> prints body, expected vs actual; sets BODY
 run() {
   local label="$1" expected="$2"; shift 2
   hr "$label (expect $expected)"
   local out; out=$(curl -s -w $'\n%{http_code}' "$@")
   local actual="${out##*$'\n'}"; BODY="${out%$'\n'*}"
   echo "$BODY"
-  if [ "$actual" = "$expected" ]; then PASS=$((PASS+1)); echo "  expected=$expected actual=$actual  OK"
+  if [[ "|$expected|" == *"|$actual|"* ]]; then PASS=$((PASS+1)); echo "  expected=$expected actual=$actual  OK"
   else FAIL=$((FAIL+1)); echo "  expected=$expected actual=$actual  MISMATCH"; fi
 }
 json_get() { python -c 'import sys,json; print(json.load(sys.stdin).get(sys.argv[1],""))' "$1"; }
@@ -38,7 +38,7 @@ run "list feedback no key" 401 "$BASE_URL/v1/feedback"
 run "list feedback with key" 200 -H "X-API-Key: $ADMIN" "$BASE_URL/v1/feedback"
 run "stats intents no key" 401 "$BASE_URL/v1/stats/intents"
 run "stats intents with key" 200 -H "X-API-Key: $ADMIN" "$BASE_URL/v1/stats/intents"
-run "weather (200, or 503 if upstream down)" 200 -m 10 "$BASE_URL/v1/weather"
+run "weather (200, or 503 if upstream down)" "200|503" -m 10 "$BASE_URL/v1/weather"
 run "unknown route" 404 "$BASE_URL/v1/nope"
 
 echo; echo "== summary: $PASS matched, $FAIL mismatched"
