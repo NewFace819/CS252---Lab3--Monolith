@@ -78,3 +78,55 @@ A real provider class is added in Week 4 without changing `service.py`.
 3. **Configuration comes from the environment; `.env.example` documents every variable.**
    (Twelve-Factor III.) Rates, limits and keys are not in code, so changing a fee means editing one
    variable. `llm_api_key` uses `repr=False` and `.env` is git-ignored, so secrets never reach Git or logs.
+
+## 4. Storage layer (Lab 5)
+
+Feedback and interaction metadata are persisted in SQLite through SQLModel. The API never writes SQL:
+every database operation goes through one class.
+
+| Piece | Where | Role |
+|---|---|---|
+| Models | `src/assistant_api/db.py` | `ChatSession`, `Interaction`, `Feedback`: one class = one table |
+| `Repository` | `src/assistant_api/db.py` | `record_interaction`, `add_feedback`, `list_feedback`, `intent_stats`. Each call opens a `Session`, adds or queries, then commits (one transaction) |
+| Schema SQL | `sql/migrations/001_init.sql` | Equivalent hand-written SQL; `scripts/migrate.py` applies numbered files once |
+| Seed data | `scripts/seed.py` | Invented interactions for practising queries |
+| Wiring | `src/assistant_api/main.py` | Creates the engine and `Repository(engine, settings.session_salt)` |
+
+```mermaid
+flowchart LR
+    API["main.py (FastAPI)"] --> REPO[Repository]
+    REPO --> DB[("assistant.db (SQLite)")]
+    API --> S[AssistantService]
+```
+
+### Tables
+
+```mermaid
+erDiagram
+    chat_session ||--o{ interaction : has
+    interaction ||--o{ feedback : receives
+```
+
+- `chat_session(id PK, channel, created_at)`: `id` is the hashed session id.
+- `interaction(id PK, request_id UNIQUE, session_id FK, intent, topic, resolved, degraded, latency_ms, created_at)`.
+- `feedback(id PK, request_id FK, rating, comment, created_at)`: `rating` is -1, 0 or 1; `comment` is optional (max 500 chars).
+
+Full reasoning and the ER diagram are in `lab05/worksheets/data_model.md`.
+
+### Privacy by design
+
+- The raw user message is **never stored**; only metadata (intent, topic, resolved, degraded, latency).
+- The session id is stored as `sha256(SESSION_SALT + raw_id)[:16]`: the same session always maps to the same
+  code, but the id cannot be recovered. `SESSION_SALT` comes from `.env` (default `dev-salt` for local use only).
+- No name, phone number or other personal field exists in the schema.
+
+### Endpoints that use the database
+
+| Endpoint | Behaviour |
+|---|---|
+| `POST /v1/chat` | Answers, then records one `interaction` (metadata only) and returns its `request_id` |
+| `POST /v1/feedback` | Saves a `feedback` row (201). Unknown `request_id` -> 404 |
+| `GET /v1/feedback` | Admin (`X-API-Key`): newest first, up to 100 |
+| `GET /v1/stats/intents` | Admin: per intent `requests`, `avg_latency_ms`, `unresolved`, most requests first |
+
+Feedback now survives a server restart (it used to be an in-memory list).
