@@ -8,6 +8,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from assistant_api import db as db_module
+from assistant_api import main as main_module
 from assistant_core import service as service_module
 from assistant_core.errors import InvalidRequest, ProviderError
 from assistant_core.models import Intent, Office, Rule
@@ -63,6 +65,17 @@ def fake_parse_credits(text):
 
 def fake_tuition(credits, retake, rate, retake_multiplier, max_credits):
     return int(credits * rate + retake * rate * retake_multiplier)
+
+
+@pytest.fixture(autouse=True)
+def in_memory_database(monkeypatch):
+    """Lab 5: every app built in a test gets its own fresh in-memory SQLite database.
+
+    create_app() builds its engine from settings.database_url (default: the file assistant.db).
+    Forcing "sqlite://" here keeps tests isolated from each other and never touches a real file.
+    A test that needs a file database (e.g. a restart test) passes its own Repository to create_app().
+    """
+    monkeypatch.setattr(main_module, "make_engine", lambda _url: db_module.make_engine("sqlite://"))
 
 
 @pytest.fixture

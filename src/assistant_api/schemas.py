@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from assistant_core.models import Intent, Source
 
@@ -31,6 +31,12 @@ class FeedbackIn(BaseModel):
 class FeedbackOut(FeedbackIn):
     id: int
     created_at: datetime
+
+    @field_validator("created_at")
+    @classmethod
+    def _as_utc(cls, value: datetime) -> datetime:
+        # SQLite drops the timezone when it stores a datetime; every value we save is UTC.
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
 
 
 class Weather(BaseModel):

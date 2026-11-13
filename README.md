@@ -51,3 +51,25 @@ Individual work (everyone): `docs/lab3/before_after_<name>.md` and the H1 AI-ext
 ## Lab 4 — REST API
 
 Xem [docs/lab4/README.md](docs/lab4/README.md): hợp đồng API, phân công và checklist nộp bài.
+
+## Lab 5 — Database (SQLite + SQLModel)
+
+Feedback và metadata của mỗi câu hỏi giờ được lưu vào SQLite (`assistant.db`) qua `Repository` trong
+`src/assistant_api/db.py`. Không lưu nguyên văn câu hỏi hay thông tin cá nhân; session id được hash SHA-256 với `SESSION_SALT`.
+
+```bash
+cp .env.example .env                       # đặt SESSION_SALT và API_ADMIN_KEY của riêng bạn
+uvicorn assistant_api.main:create_app --factory --reload   # tự tạo assistant.db (3 bảng) khi khởi động
+python scripts/migrate.py assistant.db     # áp dụng sql/migrations theo thứ tự (chạy lại nhiều lần vẫn an toàn)
+python scripts/seed.py assistant.db 300    # chỉ dữ liệu giả lập, cho Part F
+```
+
+| Thay đổi so với Lab 4 | |
+|---|---|
+| `POST /v1/chat` | ghi một dòng `interaction` (intent, topic, resolved, degraded, latency) |
+| `POST /v1/feedback` | `request_id` phải là của một câu trả lời có thật, nếu không trả **404** |
+| `GET /v1/feedback?limit=` | đọc từ DB, mới nhất trước; vẫn cần `X-API-Key` |
+| `GET /v1/stats/intents` | mới: số request, latency trung bình, số chưa giải quyết theo intent; cần `X-API-Key` |
+
+Test dùng SQLite in-memory (fixture `in_memory_database` trong `tests/conftest.py`), không đụng tới `assistant.db`.
+Không commit file `*.db` hay `.env`.

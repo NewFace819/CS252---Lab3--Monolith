@@ -1,4 +1,8 @@
-"""T2/T3 tests use isolated apps and no real secrets or external services."""
+"""T2/T3 tests use isolated apps and no real secrets or external services.
+
+Lab 5: feedback must point at a real answer, so each test first records the interactions it rates
+(through the app's Repository, since these apps use a dummy service and cannot chat).
+"""
 
 from datetime import datetime, timedelta, timezone
 
@@ -20,6 +24,11 @@ def make_client(key=ADMIN_KEY):
     return TestClient(create_app(Settings(api_admin_key=key), object(), weather))
 
 
+def record(client, *request_ids):
+    for request_id in request_ids:
+        client.app.state.repo.record_interaction("test-session", request_id, "rule", None, True, False, 1.0)
+
+
 @pytest.fixture
 def client():
     with make_client() as client:
@@ -27,6 +36,7 @@ def client():
 
 
 def test_feedback_roundtrip_ids_and_utc_time(client):
+    record(client, "request-1", "request-2", "request-3")
     before = datetime.now(timezone.utc)
     for expected_id, rating in enumerate((-1, 0, 1), start=1):
         payload = {"request_id": f"request-{expected_id}", "rating": rating, "comment": "Rõ ràng"}
@@ -40,10 +50,11 @@ def test_feedback_roundtrip_ids_and_utc_time(client):
         assert before <= created <= datetime.now(timezone.utc)
     listed = client.get("/v1/feedback", headers={"X-API-Key": ADMIN_KEY})
     assert listed.status_code == 200
-    assert [item["id"] for item in listed.json()] == [1, 2, 3]
+    assert [item["id"] for item in listed.json()] == [3, 2, 1]  # Lab 5 R2: newest first
 
 
 def test_feedback_comment_can_be_omitted(client):
+    record(client, "r")
     response = client.post("/v1/feedback", json={"request_id": "r", "rating": 0})
     assert response.status_code == 201
     assert response.json()["request_id"] == "r"
@@ -51,6 +62,7 @@ def test_feedback_comment_can_be_omitted(client):
 
 
 def test_feedback_accepts_null_comment_and_schema_boundaries(client):
+    record(client, "r" * 64)
     for comment in (None, "a" * 500):
         payload = {"request_id": "r" * 64, "rating": 1, "comment": comment}
         response = client.post("/v1/feedback", json=payload)
@@ -100,6 +112,7 @@ def test_disabled_admin_key_never_authorizes(configured_key):
 
 
 def test_feedback_is_isolated_between_app_instances(client):
+    record(client, "r")
     assert client.post("/v1/feedback", json={"request_id": "r", "rating": 1}).status_code == 201
     with make_client() as other:
         assert other.get("/v1/feedback", headers={"X-API-Key": ADMIN_KEY}).json() == []
