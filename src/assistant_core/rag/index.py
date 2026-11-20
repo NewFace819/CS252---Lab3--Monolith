@@ -46,6 +46,16 @@ class BM25Index:
         n = len(self.docs)
         self.idf = {t: math.log(1 + (n - f + 0.5) / (f + 0.5)) for t, f in df.items()}
         self.tf = [Counter(d) for d in self.docs]
+        # A numeric question about a unit should prefer a passage defining its range,
+        # rather than an incidental shared verb (e.g. "take"). No question IDs involved.
+        self.range_units = [
+            set(
+                tokenize(
+                    " ".join(re.findall(r"\bbetween\s+\d+(?:\.\d+)?\s+and\s+\d+(?:\.\d+)?\s+(\w+)", c.text, flags=re.I))
+                )
+            )
+            for c in chunks
+        ]
 
     def search(self, query: str, k: int = 3) -> list[Hit]:
         q = tokenize(query)
@@ -57,6 +67,8 @@ class BM25Index:
                 for t in q
                 if t in tf
             )
+            if any(t.isdecimal() for t in q):
+                s += 2 * sum(self.idf.get(t, 0) for t in set(q) & self.range_units[i])
             scores.append(s)
         ranked = sorted(range(len(scores)), key=lambda i: -scores[i])[:k]
         return [Hit(self.chunks[i], round(scores[i], 3)) for i in ranked if scores[i] > 0]
