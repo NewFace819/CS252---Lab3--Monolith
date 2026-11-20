@@ -36,7 +36,10 @@ class Response(BaseModel):
     answer: str
     intent: Intent
     sources: list[Source] = []
-    degraded: bool = False
+    degraded: bool = False  # True when a fallback path was used
+    escalate: bool = False  # Lab 6: True when the assistant abstained and suggests a human
+    path: str = "deterministic"  # Lab 6: deterministic | retrieval | llm | tool | abstain
+    confidence: float | None = None
 
 
 # --- Domain records: produced by knowledge.py, consumed by responder.py / service.py ---

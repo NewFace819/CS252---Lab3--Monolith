@@ -59,7 +59,7 @@ def test_cli_missing_data_fails_at_startup(monkeypatch, tmp_path, capsys):
 
 
 def test_cli_unknown_provider_fails_at_startup(monkeypatch, capsys):
-    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.setenv("LLM_PROVIDER", "made-up-provider")
     monkeypatch.setenv("LLM_API_KEY", "test-only-key")
     assert main(["hi"]) == 2
     err = capsys.readouterr().err

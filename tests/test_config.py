@@ -59,8 +59,8 @@ def test_dotenv_loads_but_does_not_override_process(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize("key", [None, "", "   "])
-def test_nonstub_requires_nonempty_key(monkeypatch, key):
-    monkeypatch.setenv("LLM_PROVIDER", "provider")
+def test_openai_requires_nonempty_key(monkeypatch, key):
+    monkeypatch.setenv("LLM_PROVIDER", "openai")
     if key is not None:
         monkeypatch.setenv("LLM_API_KEY", key)
     with pytest.raises(ConfigError, match="LLM_API_KEY"):

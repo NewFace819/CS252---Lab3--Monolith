@@ -16,9 +16,12 @@ from assistant_core.service import AssistantService, build_service
 
 def ask(service: AssistantService, text: str) -> str:
     try:
-        return service.handle(Message(text=text)).answer
+        resp = service.handle(Message(text=text))
     except ValidationError:
         return "Please type a question (1-2000 characters)."
+    # Lab 6: show where the answer comes from.
+    lines = [resp.answer, *(f"  source: {s.id} — {s.title}" for s in resp.sources)]
+    return "\n".join(lines)
 
 
 def main(argv: list[str] | None = None) -> int:
