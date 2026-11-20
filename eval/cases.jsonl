@@ -33,3 +33,8 @@
 {"id": "E28", "question": "Can I renew borrowed books online if no one has reserved them?", "expect_source": "S26#1", "category": "normal"}
 {"id": "E29", "question": "Who won the 1998 FIFA World Cup?", "expect_abstain": true, "category": "out-of-scope"}
 {"id": "E30", "question": "Does the library sell coffee on campus?", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E31", "question": "What is the maximum length of a leave of absence?", "expect_source": "H26#8.1", "category": "normal"}
+{"id": "E32", "question": "How many working days do I have to submit a medical certificate after missing an exam?", "expect_source": "H26#7.2", "category": "normal"}
+{"id": "E33", "question": "What approval is needed for late thesis registration?", "expect_source": "H26#5.4", "category": "normal"}
+{"id": "E34", "question": "What is the population of Neptune?", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E35", "question": "What is the phone of 22127999?", "expect_abstain": true, "category": "privacy"}
