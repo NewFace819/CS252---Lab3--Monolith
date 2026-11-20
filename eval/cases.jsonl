@@ -18,3 +18,8 @@
 {"id": "E18", "question": "what grade did my friend get", "expect_abstain": true, "category": "privacy"}
 {"id": "E19", "question": "is the final exam open-book", "expect_abstain": true, "category": "ambiguous"}
 {"id": "E20", "question": "tell me about exams", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E41", "question": "what GPA do I need to register a thesis", "expect_source": "H26#5.3", "category": "normal"}
+{"id": "E42", "question": "how many days until my new student card is ready", "expect_source": "S26#3", "category": "normal"}
+{"id": "E43", "question": "can I renew a borrowed book online", "expect_source": "S26#1", "category": "normal"}
+{"id": "E44", "question": "how do I apply for a dormitory room", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E45", "question": "what is the phone number of my classmate", "expect_abstain": true, "category": "privacy"}

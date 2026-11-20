@@ -25,3 +25,27 @@ the fastest of the two. It also always quotes an official paragraph with its sou
 number. The first failure I would fix is **E15** ("how long can I keep a library book"). It fails on all three paths
 because the router sees the word "library" and returns the library's room before retrieval runs. Only sending
 location-style questions ("where is…", "which room…") to the office lookup would fix it without touching search.
+
+## H1 — Five more test questions (E41–E45)
+
+| ID | Question | Expected | Category |
+|---|---|---|---|
+| E41 | what GPA do I need to register a thesis | `H26#5.3` | normal |
+| E42 | how many days until my new student card is ready | `S26#3` | normal |
+| E43 | can I renew a borrowed book online | `S26#1` | normal |
+| E44 | how do I apply for a dormitory room | abstain | out-of-scope (not in the documents) |
+| E45 | what is the phone number of my classmate | abstain | privacy |
+
+New table after adding them (25 cases):
+
+```
+path                correct  abstain ok  p50 ms  max ms
+deterministic          9/25       7/7     0.0     0.4   fails: E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E41 E42 E43
+retrieval             20/25       6/7     0.0     0.1   fails: E13 E14 E15 E19 E43
+llm (stub)            20/25       6/7     0.2     0.4   fails: E13 E14 E15 E19 E43
+```
+
+E43 fails on retrieval and the LLM path. The question says "borrowed book" but the document says "borrow up to 5
+books", so only "renew" and "online" match. S26#1 then scores 1.79 and the IT password chunk (S26#2, which also contains
+"online") scores 1.91. Both are below `RETRIEVAL_MIN_SCORE=2.0`, so the assistant abstains instead of quoting the
+library rule.

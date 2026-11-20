@@ -130,3 +130,71 @@ Full reasoning and the ER diagram are in `lab05/worksheets/data_model.md`.
 | `GET /v1/stats/intents` | Admin: per intent `requests`, `avg_latency_ms`, `unresolved`, most requests first |
 
 Feedback now survives a server restart (it used to be an in-memory list).
+
+## 5. AI services and RAG (Lab 6)
+
+Questions that are not greetings, fees or a known office go to the RAG path instead of the Lab 5 handbook search.
+The rule is: search our own documents first, let the model phrase an answer only from what was found, and check
+everything the model returns. Money is still computed by `tools.py`: the router sends fee questions to the calculator
+before search, so a model never computes a fee.
+
+| Piece | Where | Role |
+|---|---|---|
+| Guardrail | `guard.py` | Regex rules that stop questions about other students' data (grades, phone, address, student ids) before search or AI |
+| Knowledge base | `data/kb/*.md` | Three sample documents with metadata (`doc_id`, `title`, `version`, `owner`) |
+| Chunker | `rag/chunker.py` | Splits each document into one chunk per section, with ids such as `H26#5.3` |
+| Index | `rag/index.py` | `make_index(kind, chunks)` with kind `bm25`, `tfidf` or `hybrid`; `search(question, k)` returns hits sorted by score |
+| Answerer | `rag/answerer.py` | `RagAnswerer.answer(question) -> Response`: abstain, LLM, retry and fallback |
+| LLM adapter | `llm.py` | `LLM` protocol with one method `complete(prompt) -> str`; `StubLLM`, `OllamaLLM`, `OpenAICompatibleLLM`; `parse_draft` validates the output |
+| Prompt | `prompts/answer_v1.txt` | Instructions + `{sources}` + `{question}`; kept in a file so wording can change without code changes |
+| Wiring | `service.py` (`_build_rag`) | Builds the index from `KB_DIR` and the model from `LLM_PROVIDER`; no `data/kb` folder means the Lab 5 handbook path is kept |
+
+```mermaid
+flowchart TD
+    Q[question] --> R{router}
+    R -->|fee| T["tools.py: exact fee"]
+    R -->|office found| O[office lookup]
+    R -->|other| G{"guard: private data?"}
+    G -->|yes| P["privacy reply (path=abstain)"]
+    G -->|no| S["retrieve top k chunks (BM25)"]
+    S --> A{"no hits or top score < RETRIEVAL_MIN_SCORE?"}
+    A -->|yes| E["I don't know + escalate (path=abstain), no LLM call"]
+    A -->|no| L["LLM: prompt with sources, answer as JSON"]
+    L --> V{"valid JSON + schema + grounding?"}
+    V -->|yes, abstain=false| OK["answer + sources (path=llm)"]
+    V -->|yes, abstain=true| E
+    V -->|no, retry once| L
+    V -->|still failing or provider down| F["quote the best chunk (path=retrieval, degraded)"]
+```
+
+### The safety steps, in order
+
+1. **Guard**: `is_private_request` blocks questions about another student before any search.
+2. **Retrieve**: BM25 scores each chunk; rarer matching words count more.
+3. **Abstain (A1)**: if there are no hits or `hits[0].score < RETRIEVAL_MIN_SCORE` (default 2.0), return
+   `ESCALATE_MSG` with `escalate=True`. The model is not called, so it cannot guess from memory.
+4. **Structured output**: the model must return `{"answer", "source_ids", "confidence", "abstain"}`, validated by the
+   Pydantic class `AnswerDraft` (`confidence` between 0 and 1). Plain text or broken JSON raises `ProviderError`.
+5. **Grounding (A2)**: unless the model abstains, it must cite at least one source and every cited id must be in the
+   retrieved set (`set(draft.source_ids) <= allowed_ids`). Otherwise the answer is rejected.
+6. **Fallback**: after one retry, or if the provider is offline, the answer quotes the best chunk with its source and
+   `degraded=True`. It is less friendly but always true.
+
+### Response fields added in Lab 6
+
+`Response` and `/v1/chat` return `path` (`deterministic`, `retrieval`, `llm`, `tool`, `abstain`), `escalate`
+(send the student to a human) and `confidence` (from the model; `0.0` when the assistant abstains before calling it).
+
+### Configuration
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `LLM_PROVIDER` | `stub` | `stub` (offline, deterministic), `template` (no model, retrieval only), `ollama` (local), `openai` (needs `LLM_API_KEY`) |
+| `LLM_MODEL`, `LLM_BASE_URL` | provider defaults | Model name and server URL for real providers |
+| `LLM_TIMEOUT_S` | `5` | Seconds before a model call counts as failed (then the fallback is used) |
+| `KB_DIR` | `data/kb` | Folder of Markdown documents to index |
+| `RETRIEVAL_KIND` | `bm25` | `bm25`, `tfidf` or `hybrid` |
+| `RETRIEVAL_MIN_SCORE` | `2.0` | Below this top score the assistant abstains |
+
+`eval/compare_paths.py` runs `eval/cases.jsonl` against the deterministic, retrieval and LLM paths and prints how many
+cases each answers correctly, how many it correctly refuses, and its latency.
