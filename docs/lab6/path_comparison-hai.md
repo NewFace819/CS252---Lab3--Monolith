@@ -48,3 +48,30 @@ llm (stub)            20/25       6/7     0.2     0.4   fails: E13 E14 E15 E19 E
 **Did any of my questions fail?** Yes, E22 fails on all three paths: the router sees the word "fee" and sends the
 question to the tuition calculator, which replies "How many credits?", even though BM25 ranks the right paragraph
 `S26#3` first (score 12.57) — the same kind of failure as E15, so the fix belongs in the router, not in retrieval.
+
+## Bonus — fixing one failed question (E22)
+
+**Problem.** E22 ("how much is the student card replacement fee") failed on every path. The router sends any question
+containing "fee" to the tuition calculator, which answered "How many credits?", although BM25 ranks the right paragraph
+`S26#3` first.
+
+**Fix** (`src/assistant_core/router.py`). A fee question about a campus service that the knowledge base documents
+("replacement", "student card") goes to retrieval, as long as it has no "tuition" word and no credit count. Every other
+fee question still goes to the calculator, so "tuition for 18 credits and 2 retake", "What is the FEE?" and
+"fee at the library" behave exactly as before. New tests in `tests/test_router.py` cover both directions; three of them
+fail without the fix.
+
+**Re-run (25 cases):**
+
+```
+path                correct  abstain ok  p50 ms  max ms
+deterministic          9/25       7/7     0.0     0.7   fails: E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23
+retrieval             21/25       6/7     0.1     0.1   fails: E13 E14 E15 E19
+llm (stub)            21/25       6/7     0.2     0.7   fails: E13 E14 E15 E19
+```
+
+E22 now passes on retrieval and llm (20/25 → 21/25) and nothing else changed. The deterministic path still fails it, as
+it should: that path never reads the documents. The retrieval answer now quotes the real price ("The replacement fee is
+50,000 VND"); the stub only repeats the first sentence of the paragraph, so its answer cites the right source but does not
+state the price — a real model would be needed for that. The word list is deliberately small; a later fee question about
+another service would need its own entry or a smarter intent classifier.
