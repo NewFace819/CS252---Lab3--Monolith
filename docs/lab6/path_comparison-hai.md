@@ -1,6 +1,7 @@
 # Lab 6 — Three assistant paths (Hải)
 
-Chạy `python eval/compare_paths.py` ở thư mục gốc, `LLM_PROVIDER=stub`, `RETRIEVAL_KIND=bm25`, `RETRIEVAL_MIN_SCORE=2.0`, 20 câu E01–E20.
+Run from the repository root with `python eval/compare_paths.py`, using `LLM_PROVIDER=stub`, `RETRIEVAL_KIND=bm25`,
+`RETRIEVAL_MIN_SCORE=2.0` and the 20 cases E01–E20.
 
 ```
 path                correct  abstain ok  p50 ms  max ms
@@ -11,11 +12,16 @@ llm (stub)            16/20       4/5     0.2     0.5   fails: E13 E14 E15 E19
 
 | Path | Correct /20 | Abstain correct /5 | p50 latency | Controllability (1–5) | Main failure mode |
 |---|---|---|---|---|---|
-| deterministic | 7 | 5 | 0.0 ms | 5 | chỉ trả lời học phí và phòng ban, mọi câu về quy định đều bị bỏ qua |
-| retrieval | 16 | 4 | 0.1 ms | 4 | so khớp từ nguyên văn: "due" ≠ "deadline" (E13), "credits" ≠ "credit" (E14); E19 có đoạn liên quan với điểm cao nên không abstain |
-| llm (provider: stub) | 16 | 4 | 0.2 ms | 3 | sai giống hệt retrieval vì stub chỉ diễn đạt lại đoạn văn đầu tiên; model thật sẽ chậm hơn và có thể bịa nếu không có grounding check |
+| deterministic | 7 | 5 | 0.0 ms | 5 | only answers fees and offices; every policy question goes unanswered |
+| retrieval | 16 | 4 | 0.1 ms | 4 | exact word matching: "due" ≠ "deadline" (E13), "credits" ≠ "credit" (E14); E19 finds a related paragraph with a high score, so it does not abstain |
+| llm (provider: stub) | 16 | 4 | 0.2 ms | 3 | fails on exactly the same cases as retrieval, because the stub only rephrases the first retrieved paragraph; a real model would be slower and could invent rules without the grounding check |
 
-E15 ("how long can I keep a library book") fail ở cả ba đường vì router thấy chữ "library" nên trả về phòng thư viện trước khi kịp tìm kiếm.
+E15 ("how long can I keep a library book") fails on all three paths: the router sees the word "library" and returns the
+library's room before retrieval is ever tried.
 
 **Which path would you ship for policy questions, and why?**
-Với câu hỏi về handbook, mình sẽ dùng đường **retrieval**: nó đúng 16/20, ngang với llm, nhanh hơn, và luôn trích nguyên văn đoạn trong tài liệu chính thức kèm nguồn nên không thể bịa ra quy định. Đường llm chỉ nên bật khi đã có model thật diễn đạt tốt hơn, và vẫn phải giữ grounding check (A2) cùng abstain (A1) phía trước. Lỗi mình sửa trước là **E14**: chỉ cần bỏ chữ "s" cuối trong `tokenize` là "credits" khớp "credit", sửa rất rẻ mà cả retrieval lẫn llm đều được lợi.
+For handbook questions I would ship the **retrieval** path: it gets 16/20, the same as the LLM path, it is faster, and it
+always quotes the official paragraph with its source, so it cannot invent a rule. I would only switch on the LLM path
+with a real model that phrases answers better, and only behind the grounding check (A2) and the abstain step (A1). The
+first failure I would fix is **E14**: removing a final "s" in `tokenize` makes "credits" match "credit", a very cheap fix
+that helps both retrieval and the LLM path.
