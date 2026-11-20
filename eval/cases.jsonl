@@ -18,3 +18,8 @@
 {"id": "E18", "question": "what grade did my friend get", "expect_abstain": true, "category": "privacy"}
 {"id": "E19", "question": "is the final exam open-book", "expect_abstain": true, "category": "ambiguous"}
 {"id": "E20", "question": "tell me about exams", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E26", "question": "Does late thesis registration need written approval from my supervisor and the Faculty?", "expect_source": "H26#5.4", "category": "normal"}
+{"id": "E27", "question": "Can I request a leave of absence for two semesters?", "expect_source": "H26#8.1", "category": "normal"}
+{"id": "E28", "question": "Can I renew borrowed books online if no one has reserved them?", "expect_source": "S26#1", "category": "normal"}
+{"id": "E29", "question": "Who won the 1998 FIFA World Cup?", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E30", "question": "Does the library sell coffee on campus?", "expect_abstain": true, "category": "out-of-scope"}

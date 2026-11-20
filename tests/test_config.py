@@ -15,10 +15,20 @@ VARIABLES = (
     "LOG_LEVEL",
 )
 
+LAB6_VARIABLES = (
+    "KB_DIR",
+    "RETRIEVAL_KIND",
+    "RETRIEVAL_MIN_SCORE",
+    "LLM_MODEL",
+    "LLM_BASE_URL",
+    "LLM_TIMEOUT_S",
+    "PROMPT_VERSION",
+)
+
 
 @pytest.fixture(autouse=True)
 def isolated_environment(monkeypatch):
-    for name in VARIABLES:
+    for name in (*VARIABLES, *LAB6_VARIABLES):
         # Register absent variables too, so dotenv additions are undone by pytest.
         monkeypatch.setenv(name, "")
         monkeypatch.delenv(name, raising=False)
@@ -47,6 +57,45 @@ def test_all_environment_fields(monkeypatch, tmp_path):
     assert settings.retake_multiplier == 2.0
     assert settings.max_credits == 24
     assert settings.log_level == "DEBUG"
+
+
+def test_lab6_defaults_without_env_file():
+    settings = load_settings(None)
+    assert settings.kb_dir == Path("data/kb")
+    assert settings.retrieval_kind == "bm25"
+    assert settings.retrieval_min_score == 2.0
+    assert settings.llm_model == "llama3.2"
+    assert settings.llm_base_url is None
+    assert settings.llm_timeout_s == 5.0
+    assert settings.prompt_version == "answer_v1"
+
+
+def test_lab6_loads_environment_and_dotenv(monkeypatch, tmp_path):
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "KB_DIR=fixtures/kb\nRETRIEVAL_KIND=hybrid\nRETRIEVAL_MIN_SCORE=1.25\n"
+        "LLM_MODEL=dotenv-model\nLLM_BASE_URL=http://localhost:11434\n"
+        "LLM_TIMEOUT_S=7.5\nPROMPT_VERSION=answer_v2\nLLM_PROVIDER=ollama\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("LLM_MODEL", " process-model ")
+    settings = load_settings(str(env_file))
+    assert settings.kb_dir == Path("fixtures/kb")
+    assert settings.retrieval_kind == "hybrid"
+    assert settings.retrieval_min_score == 1.25
+    assert settings.llm_model == "process-model"
+    assert settings.llm_base_url == "http://localhost:11434"
+    assert settings.llm_timeout_s == 7.5
+    assert settings.prompt_version == "answer_v2"
+    assert settings.llm_provider == "ollama"
+    assert settings.llm_api_key is None
+
+
+@pytest.mark.parametrize("name", ["RETRIEVAL_MIN_SCORE", "LLM_TIMEOUT_S"])
+def test_lab6_invalid_numbers_raise_config_error(monkeypatch, name):
+    monkeypatch.setenv(name, "not-a-number")
+    with pytest.raises(ConfigError, match="numeric environment variables"):
+        load_settings(None)
 
 
 def test_dotenv_loads_but_does_not_override_process(monkeypatch, tmp_path):
