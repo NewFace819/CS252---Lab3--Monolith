@@ -115,3 +115,12 @@ numeric credit questions can prefer the credit-load rule even for other credit p
 and a valid single-topic overview such as `explain refunds` may abstain unnecessarily.
 This accepts answer-quality limitations, not merely slower execution. The heuristics
 remain unchanged. The PR is ready for review, with team merge ordering still applicable.
+
+## Final integration after #65
+
+Merged main 2e46255 (PR #65) and resolved eval/log conflicts by keeping all unique
+cases and log entries. The committed set now contains E01-E45 exactly once.
+Full tests: 289 passed; Ruff check/format and diff check passed.
+Evaluation on the actual merged code: deterministic 16/45 (abstain 14/15),
+retrieval and stub 40/45 (abstain 12/15). Remaining retrieval/stub failures:
+E13, E15, E19, E30, E39. E14, E20 and E43 pass; main's E22 routing fix is preserved.
