@@ -34,3 +34,24 @@ def test_rule_is_the_default():
 
 def test_no_offices_falls_through_to_rule():
     assert route("where is the library", set()) is Intent.RULE
+
+
+# Lab 6 bonus (E22): a documented service fee goes to retrieval, tuition still goes to the calculator.
+@pytest.mark.parametrize(
+    "text", ["how much is the student card replacement fee", "Student card replacement fee?", "card replacement fee"]
+)
+def test_service_fee_goes_to_retrieval(text):
+    assert route(text, OFFICES) is Intent.RULE
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "tuition for 18 credits and 2 retake",
+        "fee for 18 credits",
+        "tuition fee after student card replacement",  # tuition word wins
+        "replacement fee for 3 credits",  # a credit count means a calculation
+    ],
+)
+def test_tuition_questions_still_use_the_calculator(text):
+    assert route(text, OFFICES) is Intent.FEE
