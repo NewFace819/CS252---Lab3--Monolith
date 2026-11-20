@@ -23,11 +23,6 @@
 {"id": "E23", "question": "can I get a refund after week 4", "expect_source": "F26#4", "category": "normal"}
 {"id": "E24", "question": "who will win the football match", "expect_abstain": true, "category": "out-of-scope"}
 {"id": "E25", "question": "what is the phone number of 22127001", "expect_abstain": true, "category": "privacy"}
-{"id": "E36", "question": "how do I reset my password", "expect_source": "S26#2", "category": "normal"}
-{"id": "E37", "question": "who must approve a late thesis registration", "expect_source": "H26#5.4", "category": "paraphrase"}
-{"id": "E38", "question": "what grade do I need to transfer credits from another university", "expect_source": "H26#8.3", "category": "normal"}
-{"id": "E39", "question": "can I bring a calculator to the exam", "expect_abstain": true, "category": "ambiguous"}
-{"id": "E40", "question": "where can I park my motorbike", "expect_abstain": true, "category": "out-of-scope"}
 {"id": "E26", "question": "Does late thesis registration need written approval from my supervisor and the Faculty?", "expect_source": "H26#5.4", "category": "normal"}
 {"id": "E27", "question": "Can I request a leave of absence for two semesters?", "expect_source": "H26#8.1", "category": "normal"}
 {"id": "E28", "question": "Can I renew borrowed books online if no one has reserved them?", "expect_source": "S26#1", "category": "normal"}
@@ -38,6 +33,11 @@
 {"id": "E33", "question": "What approval is needed for late thesis registration?", "expect_source": "H26#5.4", "category": "normal"}
 {"id": "E34", "question": "What is the population of Neptune?", "expect_abstain": true, "category": "out-of-scope"}
 {"id": "E35", "question": "What is the phone of 22127999?", "expect_abstain": true, "category": "privacy"}
+{"id": "E36", "question": "how do I reset my password", "expect_source": "S26#2", "category": "normal"}
+{"id": "E37", "question": "who must approve a late thesis registration", "expect_source": "H26#5.4", "category": "paraphrase"}
+{"id": "E38", "question": "what grade do I need to transfer credits from another university", "expect_source": "H26#8.3", "category": "normal"}
+{"id": "E39", "question": "can I bring a calculator to the exam", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E40", "question": "where can I park my motorbike", "expect_abstain": true, "category": "out-of-scope"}
 {"id": "E41", "question": "what GPA do I need to register a thesis", "expect_source": "H26#5.3", "category": "normal"}
 {"id": "E42", "question": "how many days until my new student card is ready", "expect_source": "S26#3", "category": "normal"}
 {"id": "E43", "question": "can I renew a borrowed book online", "expect_source": "S26#1", "category": "normal"}
