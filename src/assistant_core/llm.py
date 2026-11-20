@@ -54,6 +54,7 @@ def parse_draft(raw: str, allowed_ids: set[str]) -> AnswerDraft:
         draft = AnswerDraft.model_validate(json.loads(m.group(0)))
     except (json.JSONDecodeError, ValidationError) as exc:
         raise ProviderError(f"invalid structured output: {type(exc).__name__}") from exc
+    # A2 grounding check: a real answer must cite at least one source, and only retrieved ones.
     if not draft.abstain and (not draft.source_ids or not set(draft.source_ids) <= allowed_ids):
         raise ProviderError("answer cites sources that were not retrieved")
     return draft
@@ -86,12 +87,29 @@ class StubLLM:
         )
 
 
+def _content(value: object) -> str:
+    """The model's text, or ProviderError: a 200 response with null or wrong-shaped content is still a failure."""
+    if not isinstance(value, str) or not value.strip():
+        raise ProviderError("provider returned no text content")
+    return value
+
+
+# Errors a malformed but HTTP-200 response can raise while we read it (bad JSON, null, wrong types, missing keys).
+_SHAPE_ERRORS = (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError)
+
+
 class OllamaLLM:
     name = "ollama"
 
-    def __init__(self, model: str = "llama3.2", base_url: str = "http://localhost:11434", timeout_s: float = 30):
+    def __init__(
+        self,
+        model: str = "llama3.2",
+        base_url: str = "http://localhost:11434",
+        timeout_s: float = 30,
+        transport: httpx.BaseTransport | None = None,
+    ):
         self.model, self.base_url = model, base_url.rstrip("/")
-        self._http = httpx.Client(timeout=timeout_s)
+        self._http = httpx.Client(timeout=timeout_s, transport=transport)
 
     def complete(self, prompt: str) -> str:
         try:
@@ -106,17 +124,26 @@ class OllamaLLM:
                 },
             )
             r.raise_for_status()
-            return r.json()["message"]["content"]
-        except (httpx.HTTPError, KeyError) as exc:
+            return _content(r.json()["message"]["content"])
+        except _SHAPE_ERRORS as exc:
             raise ProviderError(f"ollama failed: {type(exc).__name__}") from exc
 
 
 class OpenAICompatibleLLM:
     name = "openai"
 
-    def __init__(self, api_key: str, model: str, base_url: str = "https://api.openai.com/v1", timeout_s: float = 20):
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        base_url: str = "https://api.openai.com/v1",
+        timeout_s: float = 20,
+        transport: httpx.BaseTransport | None = None,
+    ):
         self.model, self.base_url = model, base_url.rstrip("/")
-        self._http = httpx.Client(timeout=timeout_s, headers={"Authorization": f"Bearer {api_key}"})
+        self._http = httpx.Client(
+            timeout=timeout_s, headers={"Authorization": f"Bearer {api_key}"}, transport=transport
+        )
 
     def complete(self, prompt: str) -> str:
         try:
@@ -130,8 +157,8 @@ class OpenAICompatibleLLM:
                 },
             )
             r.raise_for_status()
-            return r.json()["choices"][0]["message"]["content"]
-        except (httpx.HTTPError, KeyError, IndexError) as exc:
+            return _content(r.json()["choices"][0]["message"]["content"])
+        except _SHAPE_ERRORS as exc:
             raise ProviderError(f"provider failed: {type(exc).__name__}") from exc
 
 

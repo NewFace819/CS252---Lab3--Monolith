@@ -14,12 +14,12 @@ Với câu hỏi về quy định, mình sẽ dùng retrieval có trích dẫn v
 
 ## H1 — Chạy lại sau khi thêm E26–E30
 
-Giữ nguyên cấu hình stub, BM25 và ngưỡng 2.0. Lần chạy này gồm 20 câu gốc và 5 câu của Thông.
+Giữ nguyên cấu hình stub, BM25 và ngưỡng 2.0. Sau khi đồng bộ `main`, lần chạy gồm 20 câu gốc, E21–E25 của Hải và E26–E30 của Thông.
 
-| Đường trả lời | Đúng /25 | Từ chối đúng /7 | p50 (ms) | Mã câu sai |
+| Đường trả lời | Đúng /30 | Từ chối đúng /9 | p50 (ms) | Mã câu sai |
 |---|---:|---:|---:|---|
-| deterministic | 8/25 | 6/7 | 0.0 | E01–E02, E05–E15, E26–E28, E30 |
-| retrieval | 20/25 | 5/7 | 0.0 | E13–E15, E19, E30 |
-| llm (stub) | 20/25 | 5/7 | 0.2 | E13–E15, E19, E30 |
+| deterministic | 10/30 | 8/9 | 0.0 | E01–E02, E05–E15, E21–E23, E26–E28, E30 |
+| retrieval | 24/30 | 7/9 | 0.0 | E13–E15, E19, E22, E30 |
+| llm (stub) | 24/30 | 7/9 | 0.2 | E13–E15, E19, E22, E30 |
 
 Trong nhóm câu mới, deterministic bỏ qua E26–E28 vì cần đọc tài liệu, còn cả ba đường đều sai E30 vì bộ định tuyến nhận chuỗi `fee` trong `coffee` là câu hỏi học phí rồi trả về “How many credits?” thay vì từ chối.
