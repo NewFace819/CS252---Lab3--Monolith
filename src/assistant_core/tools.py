@@ -3,8 +3,11 @@
 Owner: Đức Huy (see issue). Contract below is fixed; replace the stub bodies.
 """
 
+import json
 import re
 from datetime import date, timedelta
+
+from pydantic import BaseModel, Field, ValidationError
 
 from assistant_core.errors import InvalidRequest
 
@@ -77,3 +80,39 @@ def add_working_days(start: date, days: int) -> date:
         if current.weekday() < 5:
             days -= 1
     return current
+
+
+# ---------------------------------------------------------------- Lab 6: tool calling (from the starter)
+# An LLM may ask for a tool with JSON like {"tool": "calc_fee", "args": {"credits": 18, "retake": 2}}.
+# We never trust the arguments: they are validated with a schema, then a deterministic function runs.
+
+
+class FeeArgs(BaseModel):
+    credits: int = Field(ge=1, le=30)
+    retake: int = Field(default=0, ge=0, le=30)
+
+
+TOOL_SPECS = {
+    "calc_fee": {
+        "description": "Compute tuition in VND for a number of credits and retake credits.",
+        "parameters": FeeArgs.model_json_schema(),
+    },
+}
+
+
+def run_tool_call(raw: str, rate: int, retake_multiplier: float, max_credits: int) -> str | None:
+    """Return the tool result as text, or None if `raw` is not a tool call. Raises InvalidRequest on bad args."""
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict) or "tool" not in data:
+        return None
+    if data["tool"] != "calc_fee":
+        raise InvalidRequest(f"unknown tool {data['tool']!r}")
+    try:
+        args = FeeArgs.model_validate(data.get("args", {}))
+    except ValidationError as exc:
+        raise InvalidRequest("invalid tool arguments") from exc
+    total = tuition(args.credits, args.retake, rate, retake_multiplier, max_credits)
+    return f"Your tuition is {total:,} VND."

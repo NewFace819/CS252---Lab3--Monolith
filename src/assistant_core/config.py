@@ -17,6 +17,7 @@ class Settings(BaseModel):
     data_dir: Path = Path("data")
     llm_provider: str = "stub"
     llm_api_key: str | None = Field(default=None, repr=False)  # never printed
+    llm_timeout_s: float = 5.0
     credit_rate_vnd: int = 450_000
     retake_multiplier: float = 1.5
     max_credits: int = 30
@@ -31,12 +32,20 @@ class Settings(BaseModel):
     # Lab 5 — persistence
     database_url: str = "sqlite:///assistant.db"
     session_salt: str = Field(default="dev-salt", repr=False)  # never printed
+    # Lab 6 — AI services
+    llm_model: str = "llama3.2"
+    llm_base_url: str | None = None
+    kb_dir: Path = Path("data/kb")
+    retrieval_kind: str = "bm25"  # bm25 | tfidf | hybrid
+    retrieval_min_score: float = 2.0  # below this BM25 score we abstain
+    prompt_version: str = "answer_v1"
 
 
 def load_settings(env_file: str | None = ".env") -> Settings:
     """Build Settings from env vars (and ``env_file`` if given).
 
-    Raises ConfigError if LLM_PROVIDER != "stub" and LLM_API_KEY is missing.
+    Raises ConfigError if LLM_PROVIDER is "openai" and LLM_API_KEY is missing.
+    stub, template and ollama (a local model) need no key.
     """
     if env_file:
         load_dotenv(env_file, override=False)
@@ -45,6 +54,7 @@ def load_settings(env_file: str | None = ".env") -> Settings:
             data_dir=Path(os.getenv("ASSISTANT_DATA_DIR", "data")),
             llm_provider=os.getenv("LLM_PROVIDER", "stub").strip(),
             llm_api_key=os.getenv("LLM_API_KEY", "").strip() or None,
+            llm_timeout_s=float(os.getenv("LLM_TIMEOUT_S", "5")),
             credit_rate_vnd=int(os.getenv("CREDIT_RATE_VND", "450000")),
             retake_multiplier=float(os.getenv("RETAKE_MULTIPLIER", "1.5")),
             max_credits=int(os.getenv("MAX_CREDITS", "30")),
@@ -57,14 +67,20 @@ def load_settings(env_file: str | None = ".env") -> Settings:
             rate_limit_per_min=int(os.getenv("RATE_LIMIT_PER_MIN", "30")),
             database_url=os.getenv("DATABASE_URL", "").strip() or "sqlite:///assistant.db",
             session_salt=os.getenv("SESSION_SALT", "").strip() or "dev-salt",
+            llm_model=os.getenv("LLM_MODEL", "").strip() or "llama3.2",
+            llm_base_url=os.getenv("LLM_BASE_URL", "").strip() or None,
+            kb_dir=Path(os.getenv("KB_DIR", "").strip() or "data/kb"),
+            retrieval_kind=os.getenv("RETRIEVAL_KIND", "").strip() or "bm25",
+            retrieval_min_score=float(os.getenv("RETRIEVAL_MIN_SCORE", "2.0")),
+            prompt_version=os.getenv("PROMPT_VERSION", "").strip() or "answer_v1",
         )
     except (ValueError, ValidationError):
         # Do not expose environment values or Pydantic's input dump in errors.
         raise ConfigError("Invalid configuration: check the numeric environment variables.") from None
     if not settings.llm_provider:
         raise ConfigError("LLM_PROVIDER must not be empty.")
-    if settings.llm_provider != "stub" and not settings.llm_api_key:
-        raise ConfigError("LLM_API_KEY is required when LLM_PROVIDER is not stub.")
+    if settings.llm_provider == "openai" and not settings.llm_api_key:
+        raise ConfigError("LLM_API_KEY is required when LLM_PROVIDER is openai.")
     if settings.credit_rate_vnd <= 0 or settings.max_credits <= 0:
         raise ConfigError("CREDIT_RATE_VND and MAX_CREDITS must be positive integers.")
     if not math.isfinite(settings.retake_multiplier) or settings.retake_multiplier <= 0:

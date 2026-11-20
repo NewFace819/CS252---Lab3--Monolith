@@ -20,7 +20,7 @@ def test_health_reports_version(client):
 
 def test_chat_response_has_contract_fields(client):
     body = client.post("/v1/chat", json={"message": "tuition for 18 credits and 2 retake"}).json()
-    assert set(body) == {"answer", "intent", "sources", "degraded", "request_id"}
+    assert set(body) == {"answer", "intent", "sources", "degraded", "escalate", "path", "confidence", "request_id"}
     assert len(body["request_id"]) == 12
 
 

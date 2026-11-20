@@ -73,3 +73,19 @@ python scripts/seed.py assistant.db 300    # chỉ dữ liệu giả lập, cho 
 
 Test dùng SQLite in-memory (fixture `in_memory_database` trong `tests/conftest.py`), không đụng tới `assistant.db`.
 Không commit file `*.db` hay `.env`.
+
+## Lab 6 — AI services & RAG
+
+Câu hỏi về quy định giờ đi qua: guard (`guard.py`) → tìm đoạn văn bằng BM25 trong `data/kb/*.md` → nếu điểm thấp thì
+**abstain** (nói "không biết") → LLM trả JSON, kiểm tra schema + grounding → nếu lỗi thì quote nguyên đoạn văn.
+Học phí và phòng ban vẫn do code tính (deterministic). Mặc định chạy offline với `StubLLM`, không cần API key.
+
+```bash
+python -m assistant_core "I lost my student card"     # in câu trả lời + source
+python eval/compare_paths.py                          # so sánh deterministic / retrieval / llm (chạy ở thư mục gốc)
+LLM_PROVIDER=ollama LLM_MODEL=llama3.2 python -m assistant_core "..."   # bonus: model thật (ollama pull llama3.2)
+```
+
+`POST /v1/chat` trả thêm `path` (deterministic | retrieval | llm | tool | abstain), `escalate`, `confidence`.
+Phân công và checklist nộp bài: [docs/lab6/README.md](docs/lab6/README.md).
+
