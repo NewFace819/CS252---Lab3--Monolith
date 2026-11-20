@@ -20,7 +20,7 @@ Here the stub is deterministic and only exercises the LLM interface, not a real 
 
 I would ship retrieval-only for handbook questions initially, because it quotes the official source and achieves the same 16/20 as the stub without a model call.
 RAG works like an open-book exam: retrieve relevant passages first, then let the model phrase an answer while code checks citations and abstains when evidence is weak.
-I would investigate retrieval ranking first (including E14's credit/credits mismatch), then paraphrases E13/E15 and the unsafe answer to ambiguous E19 before enabling a real model.
+I would fix retrieval ranking first, because E14's `take` matches the exam-absence passage and ranks it above the credit-load section, then investigate paraphrases E13/E15 and the unsafe answer to ambiguous E19 before enabling a real model.
 
 ## H1 — Gia Huy's five added cases (E31–E35), before H3
 
@@ -35,5 +35,7 @@ both require abstention. The IDs are unique and use Gia Huy's assigned range onl
 | retrieval | 21/25 | 6/7 | 0.0 | 0.1 | E13 E14 E15 E19 |
 | llm (stub) | 21/25 | 6/7 | 0.2 | 0.4 | E13 E14 E15 E19 |
 
-All five new cases pass for retrieval and the stub; E14 still fails because the top-ranked source
-is not the credit-load section, and the credit/credits mismatch is one candidate cause to investigate in H3.
+All five new cases pass for retrieval and the stub; E14 still fails because `take` matches
+the exam-absence passage H26#7.2, which BM25 ranks above the credit-load section H26#6.1.
+The credit-load text already contains `credits`, so this is not a singular/plural mismatch.
+On the baseline index, the top scores are H26#7.2 = 2.09, H26#6.1 = 1.48 and H26#8.3 = 1.43.
