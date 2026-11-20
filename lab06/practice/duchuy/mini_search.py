@@ -44,8 +44,9 @@ def build_index(docs: dict[str, str]) -> dict[str, set[str]]:
     Example: {"thesis": {"D1"}, "credits": {"D1", "D2"}, ...}
     """
     index: dict[str, set[str]] = {}
-    # TODO S1: for each (doc_id, text) in docs.items(), for each word in tokenize(text):
-    #          index.setdefault(word, set()).add(doc_id)
+    for doc_id, text in docs.items():
+        for word in tokenize(text):
+            index.setdefault(word, set()).add(doc_id)
     return index
 
 
