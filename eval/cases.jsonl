@@ -18,6 +18,11 @@
 {"id": "E18", "question": "what grade did my friend get", "expect_abstain": true, "category": "privacy"}
 {"id": "E19", "question": "is the final exam open-book", "expect_abstain": true, "category": "ambiguous"}
 {"id": "E20", "question": "tell me about exams", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E21", "question": "how do I change my IT account password", "expect_source": "S26#2", "category": "normal"}
+{"id": "E22", "question": "how much is the student card replacement fee", "expect_source": "S26#3", "category": "normal"}
+{"id": "E23", "question": "can I get a refund after week 4", "expect_source": "F26#4", "category": "normal"}
+{"id": "E24", "question": "who will win the football match", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E25", "question": "what is the phone number of 22127001", "expect_abstain": true, "category": "privacy"}
 {"id": "E36", "question": "how do I reset my password", "expect_source": "S26#2", "category": "normal"}
 {"id": "E37", "question": "who must approve a late thesis registration", "expect_source": "H26#5.4", "category": "paraphrase"}
 {"id": "E38", "question": "what grade do I need to transfer credits from another university", "expect_source": "H26#8.3", "category": "normal"}

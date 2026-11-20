@@ -13,7 +13,7 @@ from assistant_core.knowledge import Handbook, OfficeDirectory
 from assistant_core.llm import make_llm
 from assistant_core.models import Intent, Message, Response, Rule, Source
 from assistant_core.rag.answerer import RagAnswerer
-from assistant_core.rag.chunker import load_folder
+from assistant_core.rag.chunker import Chunk, load_folder
 from assistant_core.rag.index import make_index
 from assistant_core.responder import Responder, StubLLMResponder, TemplateResponder
 from assistant_core.router import route
@@ -37,13 +37,24 @@ LLM_PROVIDERS = {"stub", "template", "ollama", "openai"}
 
 
 class AssistantService:
-    def __init__(self, settings, offices, handbook, responder, rag: RagAnswerer | None = None, fallback=None):
+    def __init__(
+        self,
+        settings,
+        offices,
+        handbook,
+        responder,
+        rag: RagAnswerer | None = None,
+        fallback=None,
+        source_texts: dict[str, str] | None = None,
+    ):
         self.settings = settings
         self.offices = offices
         self.handbook = handbook
         self.responder = responder
         self.rag = rag  # Lab 6: retrieval + LLM for rule questions (None = Lab 5 handbook path)
         self.fallback = fallback or TemplateResponder()
+        # Lab 6: official text of each knowledge-base chunk by id, so rule facts come from the source, not the model.
+        self.source_texts = source_texts or {}
 
     def handle(self, msg: Message) -> Response:
         start = time.perf_counter()
@@ -91,7 +102,7 @@ class AssistantService:
                 return Response(answer=PRIVATE_REPLY, intent=Intent.UNKNOWN, path="abstain", escalate=False)
             resp = self.rag.answer(text)
             if resp.path in ("llm", "retrieval"):
-                resp.answer = _with_deadline_text(resp.answer, text, resp.answer)
+                resp.answer = _with_deadline_text(resp.answer, text, self._cited_text(resp))
             return resp
         rule = self.handbook.search(text)
         if rule is None:
@@ -104,6 +115,11 @@ class AssistantService:
             answer = _with_deadline(self.fallback.explain(text, rule), text, rule)
             return Response(answer=answer, intent=Intent.RULE, sources=sources, degraded=True)
         return Response(answer=_with_deadline(answer, text, rule), intent=Intent.RULE, sources=sources)
+
+    def _cited_text(self, resp: Response) -> str:
+        """Official text of the cited sources. The deadline is read from here, never from the model's wording,
+        because a model may paraphrase 'within 3 working days' and the exact duration would be lost."""
+        return " ".join(self.source_texts.get(s.id, "") for s in resp.sources)
 
 
 def _with_deadline(answer: str, text: str, rule: Rule) -> str:
@@ -127,15 +143,19 @@ def build_service(settings: Settings) -> AssistantService:
     responder_cls = RESPONDERS.get(settings.llm_provider, TemplateResponder)
     offices = OfficeDirectory.from_csv(settings.data_dir / "offices.csv")
     handbook = Handbook.from_json(settings.data_dir / "handbook.json")
-    return AssistantService(settings, offices, handbook, responder_cls(), _build_rag(settings))
+    if not settings.kb_dir.exists():  # no knowledge base folder -> keep the Lab 5 handbook path
+        return AssistantService(settings, offices, handbook, responder_cls())
+    chunks = load_folder(settings.kb_dir)
+    texts = {c.id: c.text for c in chunks}
+    return AssistantService(
+        settings, offices, handbook, responder_cls(), _build_rag(settings, chunks), source_texts=texts
+    )
 
 
-def _build_rag(settings: Settings) -> RagAnswerer | None:
-    """Lab 6: index data/kb and pick the LLM. No knowledge base folder -> keep the Lab 5 handbook path."""
-    if not settings.kb_dir.exists():
-        return None
+def _build_rag(settings: Settings, chunks: list[Chunk]) -> RagAnswerer:
+    """Lab 6: index the knowledge-base chunks and pick the LLM."""
     s = settings
-    index = make_index(s.retrieval_kind, load_folder(s.kb_dir))
+    index = make_index(s.retrieval_kind, chunks)
     llm = (
         None
         if s.llm_provider == "template"
