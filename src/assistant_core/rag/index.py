@@ -23,8 +23,13 @@ STOP = frozenset(
 )
 
 
+def _normalize(token: str) -> str:
+    return token[:-1] if len(token) > 4 and token.endswith("s") else token
+
+
 def tokenize(text: str) -> list[str]:
-    return [t[:-1] if len(t) > 4 and t.endswith("s") else t for t in re.findall(r"\w+", text.lower()) if t not in STOP]
+    words = (_normalize(token) for token in re.findall(r"\w+", text.lower()))
+    return [word for word in words if word not in STOP]
 
 
 @dataclass(frozen=True)

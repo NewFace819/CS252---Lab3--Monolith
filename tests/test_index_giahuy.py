@@ -10,14 +10,25 @@ from assistant_core.rag.index import make_index, tokenize
 
 
 def test_trailing_s_rule_preserves_short_words_and_removes_stop_words():
-    assert tokenize("The CREDITS, books, bus, this, class, thesis!") == [
-        "credit",
-        "book",
-        "bus",
-        "this",
+    assert tokenize("The CREDITS, books, bus, this!") == ["credit", "book", "bus", "this"]
+
+
+def test_normalized_stop_words_do_not_leak_into_index_or_query():
+    assert tokenize("whats the retake fee") == ["retake", "fee"]
+    assert tokenize("wheres the library") == ["library"]
+
+
+def test_known_overstemming():
+    # Document the assigned heuristic's limitations, not desirable English stemming.
+    assert tokenize("class classes address addresses thesis theses") == [
         "clas",
+        "classe",
+        "addres",
+        "addresse",
         "thesi",
+        "these",
     ]
+    assert tokenize("fees days") == ["fees", "days"]  # Four-letter plurals are intentionally unchanged.
 
 
 @pytest.mark.parametrize("kind", ["bm25", "tfidf", "hybrid"])

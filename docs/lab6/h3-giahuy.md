@@ -2,8 +2,9 @@
 
 Status: E14/E20 follow-up implemented and tested. Review last after everyone's baseline comparisons.
 
-The assigned change is deliberately small: after lowercasing and stop-word filtering,
-remove one trailing `s` when the token is longer than four characters.
+The assigned change is deliberately small: lowercase, remove one trailing `s` when
+the token is longer than four characters, then filter stop words on normalized tokens.
+This order also removes `whats -> what` and `wheres -> where` rather than leaking stop words.
 The same tokenizer is used for document indexing and queries in BM25, TF-IDF and hybrid retrieval.
 Boundary and integration tests cover short words, case/punctuation, and singular/plural query equivalence.
 This is a heuristic, not an English stemmer: `class` becomes `clas` and `thesis` becomes `thesi`.
@@ -22,6 +23,8 @@ the broader match is not enough evidence to resolve this ambiguous question.
 E14 (`can I take 32 credits`) still ranks the wrong section first: BM25 returns H26#7.2,
 while TF-IDF and hybrid return F26#2. Removing `s` alone does not express that 32 exceeds
 the maximum regular semester load of 30, and `take` also matches the exam-absence passage.
+H26#6.1 already contains `credits` in its body: the baseline failure was ranking caused
+by the incidental `take` match, not the absence of a plural match in the credit-load passage.
 
 The issue's expectation that the tokenizer change alone fixes E14 was not reproduced.
 The table above records that first experiment, not the final result.
@@ -65,7 +68,35 @@ Full pytest: 252 passed; targeted RAG/index tests: 34 passed; Ruff check/format 
   may abstain unnecessarily (e.g. `explain refunds`). It does not recognize every paraphrase
   or language, and multiword ambiguity remains: E19 still fails. It is not a semantic classifier.
 - Stripping trailing `s` still changes `class`/`thesis` to `clas`/`thesi`; shared normalization
-  keeps document/query matching consistent but is not linguistically correct stemming.
+  is not linguistically correct stemming. In particular, `class/classes` becomes
+  `clas/classe`, `address/addresses` becomes `addres/addresse` and `thesis/theses` becomes
+  `thesi/these`, so these singular/plural pairs still do not match. Four-letter plurals
+  `fees` and `days` are unchanged and do not match `fee` and `day`. A separate
+  `test_known_overstemming` documents these limits rather than treating them as desirable behavior.
 - Results use the offline stub and a small dataset. They do not establish real-model answer
   correctness or a general solution to ambiguity. Keep the original Part F/H1 tables unchanged
   as before-H3 evidence and review this bonus after the other members' submissions.
+
+## Peer-review follow-up — all available H1 cases
+
+Re-ran with a temporary union of E01–E45 from `origin/main`, the four teammates' homework
+branches, and Gia Huy's local cases (45 unique IDs, no conflicting definitions).
+This tests the current H3 code against everyone's available cases before all H1 PRs merge;
+it does not claim that their other branch changes are integrated. The committed eval file
+is restored afterward and still contains only the original cases plus Gia Huy's assigned IDs.
+
+| Path | Correct /45 | Abstain correct /15 | p50 / max ms | Failed cases |
+|---|---|---|---|---|
+| deterministic | 16/45 | 14/15 | 0.0 / 0.5 | Document questions and E30 |
+| retrieval | 39/45 | 12/15 | 0.0 / 0.1 | E13 E15 E19 E22 E30 E39 |
+| llm (stub) | 39/45 | 12/15 | 0.2 / 0.5 | E13 E15 E19 E22 E30 E39 |
+
+E14 selects H26#6.1, E20 abstains, and E43 now retrieves S26#1. The original review
+5994177615 referred to the earlier trailing-s-only commit, so its E14/E20 verdict is
+superseded by the follow-up results above. Latest checks: 254 full tests passed,
+36 targeted RAG/index tests passed, Ruff check/format passed.
+Re-run on the merged main code and full eval set again before final integration.
+
+The review also identified a pre-existing hybrid score-scale issue: RRF determines
+ranking, but returned scores come from component indexes. It is not corrected by
+this tokenizer PR; the results here use default BM25, not hybrid calibration.
