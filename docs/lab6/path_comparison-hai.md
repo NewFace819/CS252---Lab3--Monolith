@@ -1,6 +1,7 @@
 # Lab 6 — Three assistant paths (Hải)
 
-Chạy `python eval/compare_paths.py` ở thư mục gốc, `LLM_PROVIDER=stub`, `RETRIEVAL_KIND=bm25`, `RETRIEVAL_MIN_SCORE=2.0`, 20 câu E01–E20.
+Run from the repository root with `python eval/compare_paths.py`, using `LLM_PROVIDER=stub`, `RETRIEVAL_KIND=bm25`,
+`RETRIEVAL_MIN_SCORE=2.0` and the 20 cases E01–E20.
 
 ```
 path                correct  abstain ok  p50 ms  max ms
@@ -11,18 +12,23 @@ llm (stub)            16/20       4/5     0.2     0.5   fails: E13 E14 E15 E19
 
 | Path | Correct /20 | Abstain correct /5 | p50 latency | Controllability (1–5) | Main failure mode |
 |---|---|---|---|---|---|
-| deterministic | 7 | 5 | 0.0 ms | 5 | chỉ trả lời học phí và phòng ban, mọi câu về quy định đều bị bỏ qua |
-| retrieval | 16 | 4 | 0.1 ms | 4 | so khớp từ nguyên văn: "due" ≠ "deadline" (E13), "credits" ≠ "credit" (E14); E19 có đoạn liên quan với điểm cao nên không abstain |
-| llm (provider: stub) | 16 | 4 | 0.2 ms | 3 | sai giống hệt retrieval vì stub chỉ diễn đạt lại đoạn văn đầu tiên; model thật sẽ chậm hơn và có thể bịa nếu không có grounding check |
+| deterministic | 7 | 5 | 0.0 ms | 5 | only answers fees and offices; every policy question goes unanswered |
+| retrieval | 16 | 4 | 0.1 ms | 4 | exact word matching: "due" ≠ "deadline" (E13), "credits" ≠ "credit" (E14); E19 finds a related paragraph with a high score, so it does not abstain |
+| llm (provider: stub) | 16 | 4 | 0.2 ms | 3 | fails on exactly the same cases as retrieval, because the stub only rephrases the first retrieved paragraph; a real model would be slower and could invent rules without the grounding check |
 
-E15 ("how long can I keep a library book") fail ở cả ba đường vì router thấy chữ "library" nên trả về phòng thư viện trước khi kịp tìm kiếm.
+E15 ("how long can I keep a library book") fails on all three paths: the router sees the word "library" and returns the
+library's room before retrieval is ever tried.
 
 **Which path would you ship for policy questions, and why?**
-Với câu hỏi về handbook, mình sẽ dùng đường **retrieval**: nó đúng 16/20, ngang với llm, nhanh hơn, và luôn trích nguyên văn đoạn trong tài liệu chính thức kèm nguồn nên không thể bịa ra quy định. Đường llm chỉ nên bật khi đã có model thật diễn đạt tốt hơn, và vẫn phải giữ grounding check (A2) cùng abstain (A1) phía trước. Lỗi mình sửa trước là **E14**: chỉ cần bỏ chữ "s" cuối trong `tokenize` là "credits" khớp "credit", sửa rất rẻ mà cả retrieval lẫn llm đều được lợi.
+For handbook questions I would ship the **retrieval** path: it gets 16/20, the same as the LLM path, it is faster, and it
+always quotes the official paragraph with its source, so it cannot invent a rule. I would only switch on the LLM path
+with a real model that phrases answers better, and only behind the grounding check (A2) and the abstain step (A1). The
+first failure I would fix is **E14**: removing a final "s" in `tokenize` makes "credits" match "credit", a very cheap fix
+that helps both retrieval and the LLM path.
 
-## H1 — năm câu hỏi thêm (E21–E25)
+## H1 — five more test questions (E21–E25)
 
-| ID | Câu hỏi | Mong đợi | Loại |
+| ID | Question | Expected | Category |
 |---|---|---|---|
 | E21 | how do I change my IT account password | `S26#2` | normal |
 | E22 | how much is the student card replacement fee | `S26#3` | normal |
@@ -30,7 +36,7 @@ Với câu hỏi về handbook, mình sẽ dùng đường **retrieval**: nó đ
 | E24 | who will win the football match | abstain | out-of-scope |
 | E25 | what is the phone number of 22127001 | abstain | privacy |
 
-Bảng mới (25 câu):
+New table (25 cases):
 
 ```
 path                correct  abstain ok  p50 ms  max ms
@@ -39,4 +45,6 @@ retrieval             20/25       6/7     0.1     0.1   fails: E13 E14 E15 E19 E
 llm (stub)            20/25       6/7     0.2     0.4   fails: E13 E14 E15 E19 E22
 ```
 
-**Câu nào fail?** E22 fail ở cả ba đường: router thấy chữ "fee" nên gửi câu hỏi sang máy tính học phí và trả lời "How many credits?" mà không tìm trong tài liệu, dù BM25 xếp đúng `S26#3` lên đầu (điểm 12.57) — cùng kiểu lỗi với E15, nên cần sửa router chứ không phải phần tìm kiếm.
+**Did any of my questions fail?** Yes, E22 fails on all three paths: the router sees the word "fee" and sends the
+question to the tuition calculator, which replies "How many credits?", even though BM25 ranks the right paragraph
+`S26#3` first (score 12.57) — the same kind of failure as E15, so the fix belongs in the router, not in retrieval.
