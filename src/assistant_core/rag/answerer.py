@@ -9,12 +9,13 @@ Order of defences:
 from __future__ import annotations
 
 import logging
+import re
 from collections.abc import Callable
 
 from assistant_core.errors import InvalidRequest, ProviderError
 from assistant_core.llm import LLM, AnswerDraft, build_prompt, parse_draft
 from assistant_core.models import Intent, Response, Source
-from assistant_core.rag.index import Index
+from assistant_core.rag.index import Index, tokenize
 
 log = logging.getLogger("assistant_core.rag")
 ESCALATE_MSG = (
@@ -38,6 +39,15 @@ class RagAnswerer:
         self.prompt_version, self.retries, self.tool_runner = prompt_version, retries, tool_runner
 
     def answer(self, question: str) -> Response:
+        # A broad request naming only one topic does not specify which policy is wanted.
+        # Preserve normal short questions such as "reset my password".
+        broad = re.match(
+            r"^(?:please\s+)?(?:tell me about|explain|describe|give me an overview of)\s+(.+)",
+            question.strip(),
+            flags=re.I,
+        )
+        if broad and len(set(tokenize(broad.group(1)))) < 2:
+            return Response(answer=ESCALATE_MSG, intent=Intent.UNKNOWN, path="abstain", escalate=True, confidence=0.0)
         hits = self.index.search(question, self.k)
         # A1 abstain: without a good enough source the LLM would only guess, so escalate instead.
         if not hits or hits[0].score < self.min_score:
