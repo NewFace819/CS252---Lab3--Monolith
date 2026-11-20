@@ -49,6 +49,7 @@ class RagAnswerer:
         if broad and len(set(tokenize(broad.group(1)))) < 2:
             return Response(answer=ESCALATE_MSG, intent=Intent.UNKNOWN, path="abstain", escalate=True, confidence=0.0)
         hits = self.index.search(question, self.k)
+        # A1 abstain: without a good enough source the LLM would only guess, so escalate instead.
         if not hits or hits[0].score < self.min_score:
             return Response(answer=ESCALATE_MSG, intent=Intent.UNKNOWN, path="abstain", escalate=True, confidence=0.0)
         sources = {h.chunk.id: Source(id=h.chunk.id, title=h.chunk.title) for h in hits}

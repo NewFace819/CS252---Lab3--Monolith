@@ -100,3 +100,18 @@ Re-run on the merged main code and full eval set again before final integration.
 The review also identified a pre-existing hybrid score-scale issue: RRF determines
 ranking, but returned scores come from component indexes. It is not corrected by
 this tokenizer PR; the results here use default BM25, not hybrid calibration.
+
+## Integration readiness
+
+Merged `origin/main` at df84c0d and resolved conflicts in `llm.py`, `answerer.py`,
+`ai-use-log.md` and `cases.jsonl`. Preserved main's provider validation/deadline fixes,
+the equivalent A1/A2 checks, both members' log entries and all unique evaluation cases.
+The merged branch has 30 cases: deterministic 11/30, retrieval/stub 26/30;
+E14 and E20 pass, remaining retrieval/stub failures are E13, E15, E19, E22.
+Full tests: 278 passed; Ruff check/format and diff check passed.
+
+The author explicitly accepts the documented ranking/abstention trade-offs for review:
+numeric credit questions can prefer the credit-load rule even for other credit policies,
+and a valid single-topic overview such as `explain refunds` may abstain unnecessarily.
+This accepts answer-quality limitations, not merely slower execution. The heuristics
+remain unchanged. The PR is ready for review, with team merge ordering still applicable.
