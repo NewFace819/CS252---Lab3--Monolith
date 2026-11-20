@@ -37,3 +37,22 @@ abstain và retrieval tụt còn 7/20, bằng deterministic; đặt `RETRIEVAL_M
 **Vì sao?** Với stub, llm không thêm được câu đúng nào mà lại tăng độ trễ và thêm một chỗ có thể hỏng (sai JSON, trích nguồn lạ). Chỉ nên bật llm khi có model thật diễn đạt tốt hơn, và khi đó grounding check (A2) với abstain (A1) phải luôn đứng trước.
 
 **Sửa lỗi nào trước?** Mình sửa **E19** trước. Ba câu kia trả lời sai kiểu "không giúp được", còn E19 trả lời sai mà tự tin: sinh viên hỏi thi có được mở sách không thì nhận về quy định nộp giấy khám bệnh trong 3 ngày làm việc, kèm nguồn trông rất đáng tin. Điểm số một mình không chặn được trường hợp này, nên cần thêm một điều kiện abstain: phải có ít nhất một từ nội dung của câu hỏi ngoài các từ chủ đề ("exam", "final") xuất hiện trong đoạn được chọn, ở đây là "open"/"book". Sau đó mới tới E14 (stemming của Gia Huy ở H3 làm "credits" khớp thêm tiêu đề "Credit load"; theo README thì H3 sửa được E14) và E15 (router không nên giành câu hỏi kiểu "how long" chỉ vì có tên phòng).
+
+## H1 — thêm E36–E40
+
+| ID | Câu hỏi | Kỳ vọng |
+|---|---|---|
+| E36 | how do I reset my password | S26#2 |
+| E37 | who must approve a late thesis registration | H26#5.4 |
+| E38 | what grade do I need to transfer credits from another university | H26#8.3 |
+| E39 | can I bring a calculator to the exam | abstain |
+| E40 | where can I park my motorbike | abstain |
+
+```
+path                correct  abstain ok  p50 ms  max ms
+deterministic          9/25       7/7     0.0     0.5   fails: E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E36 E37 E38
+retrieval             20/25       5/7     0.0     0.1   fails: E13 E14 E15 E19 E39
+llm (stub)            20/25       5/7     0.2     3.2   fails: E13 E14 E15 E19 E39
+```
+
+E39 fail giống hệt E19: handbook không nói gì về máy tính bỏ túi, nhưng "exam" khớp mục 7.2 *Exam absence* với điểm BM25 4.0, cao hơn ngưỡng 2.0, nên hệ thống trả quy định vắng thi thay vì abstain — đúng lỗi mình đã chọn sửa trước ở trên.

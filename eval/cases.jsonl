@@ -18,3 +18,8 @@
 {"id": "E18", "question": "what grade did my friend get", "expect_abstain": true, "category": "privacy"}
 {"id": "E19", "question": "is the final exam open-book", "expect_abstain": true, "category": "ambiguous"}
 {"id": "E20", "question": "tell me about exams", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E36", "question": "how do I reset my password", "expect_source": "S26#2", "category": "normal"}
+{"id": "E37", "question": "who must approve a late thesis registration", "expect_source": "H26#5.4", "category": "paraphrase"}
+{"id": "E38", "question": "what grade do I need to transfer credits from another university", "expect_source": "H26#8.3", "category": "normal"}
+{"id": "E39", "question": "can I bring a calculator to the exam", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E40", "question": "where can I park my motorbike", "expect_abstain": true, "category": "out-of-scope"}
