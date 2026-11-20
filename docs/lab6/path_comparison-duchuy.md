@@ -56,3 +56,14 @@ llm (stub)            20/25       5/7     0.2     3.2   fails: E13 E14 E15 E19 E
 ```
 
 E39 fail giống hệt E19: handbook không nói gì về máy tính bỏ túi, nhưng "exam" khớp mục 7.2 *Exam absence* với điểm BM25 4.0, cao hơn ngưỡng 2.0, nên hệ thống trả quy định vắng thi thay vì abstain — đúng lỗi mình đã chọn sửa trước ở trên.
+
+Sau khi merge `main` (thêm E21–E25 của Hải, 30 câu):
+
+```
+path                correct  abstain ok  p50 ms  max ms
+deterministic         11/30       9/9     0.0     0.8   fails: E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E36 E37 E38
+retrieval             24/30       7/9     0.0     0.1   fails: E13 E14 E15 E19 E22 E39
+llm (stub)            24/30       7/9     0.3     0.8   fails: E13 E14 E15 E19 E22 E39
+```
+
+Trong 5 câu của mình vẫn chỉ E39 fail; E22 là câu của Hải.
