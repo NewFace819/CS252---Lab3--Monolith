@@ -19,3 +19,9 @@ def test_s2_s3_search():
 
 def test_no_match_returns_empty():
     assert search(build_index(DOCS), "what is the capital of France") == []
+
+
+def test_ties_broken_by_doc_id_and_k_respected():
+    idx = build_index(DOCS)
+    assert search(idx, "students", k=5) == [("D1", 1), ("D4", 1)]
+    assert search(idx, "students", k=1) == [("D1", 1)]
