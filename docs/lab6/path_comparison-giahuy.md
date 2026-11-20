@@ -20,4 +20,22 @@ Here the stub is deterministic and only exercises the LLM interface, not a real 
 
 I would ship retrieval-only for handbook questions initially, because it quotes the official source and achieves the same 16/20 as the stub without a model call.
 RAG works like an open-book exam: retrieve relevant passages first, then let the model phrase an answer while code checks citations and abstains when evidence is weak.
-I would fix retrieval token matching first (E14's credit/credits mismatch), then investigate paraphrases E13/E15 and the unsafe answer to ambiguous E19 before enabling a real model.
+I would fix retrieval ranking first, because E14's `take` matches the exam-absence passage and ranks it above the credit-load section, then investigate paraphrases E13/E15 and the unsafe answer to ambiguous E19 before enabling a real model.
+
+## H1 — Gia Huy's five added cases (E31–E35), before H3
+
+E31 asks about the maximum leave of absence (H26#8.1), E32 about the medical-certificate
+deadline (H26#7.2), and E33 about approval for late thesis registration (H26#5.4).
+E34 is outside the campus documents and E35 asks for another student's phone number;
+both require abstention. The IDs are unique and use Gia Huy's assigned range only.
+
+| Path | Correct /25 | Abstain correct /7 | p50 ms | Max ms | Failed cases |
+|---|---|---|---|---|---|
+| deterministic | 9/25 | 7/7 | 0.0 | 0.4 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E31 E32 E33 |
+| retrieval | 21/25 | 6/7 | 0.0 | 0.1 | E13 E14 E15 E19 |
+| llm (stub) | 21/25 | 6/7 | 0.2 | 0.4 | E13 E14 E15 E19 |
+
+All five new cases pass for retrieval and the stub; E14 still fails because `take` matches
+the exam-absence passage H26#7.2, which BM25 ranks above the credit-load section H26#6.1.
+The credit-load text already contains `credits`, so this is not a singular/plural mismatch.
+On the baseline index, the top scores are H26#7.2 = 2.09, H26#6.1 = 1.48 and H26#8.3 = 1.43.
