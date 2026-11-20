@@ -25,3 +25,26 @@ always quotes the official paragraph with its source, so it cannot invent a rule
 with a real model that phrases answers better, and only behind the grounding check (A2) and the abstain step (A1). The
 first failure I would fix is **E14**: removing a final "s" in `tokenize` makes "credits" match "credit", a very cheap fix
 that helps both retrieval and the LLM path.
+
+## H1 — five more test questions (E21–E25)
+
+| ID | Question | Expected | Category |
+|---|---|---|---|
+| E21 | how do I change my IT account password | `S26#2` | normal |
+| E22 | how much is the student card replacement fee | `S26#3` | normal |
+| E23 | can I get a refund after week 4 | `F26#4` | normal |
+| E24 | who will win the football match | abstain | out-of-scope |
+| E25 | what is the phone number of 22127001 | abstain | privacy |
+
+New table (25 cases):
+
+```
+path                correct  abstain ok  p50 ms  max ms
+deterministic          9/25       7/7     0.0     0.7   fails: E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23
+retrieval             20/25       6/7     0.1     0.1   fails: E13 E14 E15 E19 E22
+llm (stub)            20/25       6/7     0.2     0.4   fails: E13 E14 E15 E19 E22
+```
+
+**Did any of my questions fail?** Yes, E22 fails on all three paths: the router sees the word "fee" and sends the
+question to the tuition calculator, which replies "How many credits?", even though BM25 ranks the right paragraph
+`S26#3` first (score 12.57) — the same kind of failure as E15, so the fix belongs in the router, not in retrieval.
