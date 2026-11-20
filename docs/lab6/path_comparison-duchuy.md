@@ -27,6 +27,9 @@ Mình in top-3 hit của BM25 cho từng câu để xem nó sai ở đâu:
 | E15 "how long can I keep a library book" | S26#1 (2.30) — đúng | S26#1 | retrieval tìm đúng, nhưng router thấy "library" nên trả phòng thư viện (intent OFFICE) trước khi tới RAG |
 | E19 "is the final exam open-book" | H26#7.2 (5.62) | không có, phải abstain | "final exam" trùng mạnh với mục 7.2 *Exam absence*, điểm vượt xa ngưỡng 2.0 nên A1 không chặn được |
 
+**Lưu ý về ngưỡng A1:** `RETRIEVAL_MIN_SCORE=2.0` là thang điểm BM25. Với `RETRIEVAL_KIND=tfidf` (cosine ≤ 1) thì câu nào cũng
+abstain và retrieval tụt còn 7/20, bằng deterministic; đặt `RETRIEVAL_MIN_SCORE=0.2` thì lại được 16/20. `hybrid` vẫn trả điểm BM25 nên không bị.
+
 ## Ba câu hỏi
 
 **Nên dùng đường nào cho câu hỏi handbook?** Mình chọn **retrieval**: đúng 16/20 bằng llm, nhanh hơn, và câu trả lời là nguyên văn đoạn handbook kèm mã nguồn nên sinh viên tự kiểm tra được.
