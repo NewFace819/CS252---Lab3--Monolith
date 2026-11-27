@@ -2,6 +2,7 @@
 
 | Date | Member | Tool | Scope | Assistance and retained output |
 |---|---|---|---|---|
+| 2026-11-27 | vbthg | OpenAI Codex | Lab 7, issue #67 | Dùng Codex hỗ trợ triển khai U1–U4 và L1/L2/F1, chạy pytest và Ruff, kiểm tra D.4 bằng Chrome với API cục bộ, thêm test API client và soạn nháp H2 từ PAIR Guidebook. Kết quả D.4 lấy từ lần chạy thực tế. Hallway test và H1 chờ người tham gia. |
 | 2026-11-20 | vbthg | OpenAI Codex | Lab 6, #47, phần trên lớp | Dùng Codex để triển khai S1–S3, A1/A2, chạy pytest/Ruff và so sánh ba đường trả lời bằng stub; giữ code và bản nháp nhận xét dựa trên kết quả đo. |
 | 2026-11-20 | vbthg | OpenAI Codex | Lab 6, #47, bài về nhà | Dùng Codex để soạn E26–E30, thêm test cấu hình, chạy lại bảng so sánh và soạn bản nháp H2. Kết quả dùng provider stub; bài phản ánh cần Thông đọc trước khi nộp. |
 | 2026-11-13 | vbthg | OpenAI Codex | Lab 5, issue #33 | Used Codex to add 10 regression cases for file-backed persistence, feedback 404, admin-protected stats and salted session privacy, and run pytest/Ruff. Retained the tests. Review of the feedback changes was completed in PR #38 before its merge. |
