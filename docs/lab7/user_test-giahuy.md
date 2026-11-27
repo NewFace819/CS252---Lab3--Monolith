@@ -8,9 +8,9 @@ Developer/browser/AppTest checks are documented separately.
 Participant: **P1 (anonymous label for this record; no real name collected)**.
 Eligibility: **student at another school, outside the project group**, confirmed by Gia Huy.
 Date: **2026-11-27**.
-Duration: **not timed**. The initial estimate was about 6 minutes; Gia Huy later clarified
-that no start/end times were recorded, so the exact duration and whether it reached the
-requested 10 minutes cannot be established.
+Duration: **approximately 11 minutes, estimated retrospectively by the participant**
+and relayed by Gia Huy. This updates Gia Huy's initial rough estimate of about 6 minutes.
+No start/end times were recorded, so 11 minutes is an estimate rather than a measured duration.
 Assigned task attempted/completed: **yes**, confirmed by Gia Huy.
 
 Task, exactly as assigned: “Find out if you can register your thesis with 118 credits,
