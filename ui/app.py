@@ -49,11 +49,11 @@ for i, m in enumerate(st.session_state.messages):
         if rid and rid not in st.session_state.rated:
             slot = st.empty()  # cleared after a vote, so the buttons disappear in the same run
             c1, c2, _ = slot.container().columns([1, 1, 6])
-            if c1.button("👍", key=f"up{i}"):
+            if c1.button("👍", key=f"up{i}", help="Helpful answer"):
                 client.send_feedback(rid, 1)
                 st.session_state.rated.add(rid)
                 st.toast("Thanks for your feedback!")
-            if c2.button("👎", key=f"down{i}"):
+            if c2.button("👎", key=f"down{i}", help="Not helpful — we will review it"):
                 client.send_feedback(rid, -1)
                 st.session_state.rated.add(rid)
                 st.toast("Thanks — we will look at this answer.")

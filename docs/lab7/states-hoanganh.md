@@ -12,7 +12,19 @@ Both servers running from the repo root: `uvicorn assistant_api.main:create_app 
 | 5 | click 👍 | "Thanks" toast; the buttons disappear | toast "Thanks for your feedback!", both buttons disappear at once, API logs `POST /v1/feedback 201`. 👎 on another answer: toast "Thanks — we will look at this answer.", also 201 | ✅ (after fix below) |
 | 6 | stop the API (Ctrl+C), ask again | "Cannot reach the assistant…" instead of a crash | red box at the top "The assistant backend is not reachable…" and the answer "⚠️ Cannot reach the assistant. Is the backend running?", no exception | ✅ |
 
-Screenshots: `img/hoanganh-state-1.png` … `img/hoanganh-state-6.png`.
+## Screenshots
+
+Taken with a headless Chromium (Playwright) against both live servers, 1280×900.
+
+| | |
+|---|---|
+| 1 sidebar example | ![state 1](img/hoanganh-state-1.png) |
+| 2 thesis 118 | ![state 2](img/hoanganh-state-2.png) |
+| 3 escalation | ![state 3](img/hoanganh-state-3.png) |
+| 4 empty Enter (still 7 messages) | ![state 4](img/hoanganh-state-4.png) |
+| 5 👍 → toast, buttons gone | ![state 5](img/hoanganh-state-5.png) |
+| 6 API stopped | ![state 6](img/hoanganh-state-6.png) |
+| phone width (390 px) | ![phone](img/hoanganh-phone.png) |
 
 ## Fix found while testing state 5
 
