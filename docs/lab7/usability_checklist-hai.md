@@ -16,5 +16,6 @@ Checked against the running app (both servers, see `states-hai.md`).
 
 ## Hallway test (E.3)
 
-TODO (Hải): ask 1 person from another group to use the page for 2 minutes without explanation, then write 1–2 sentences here
-about what surprised them.
+Tester (another group): said the app works fine ("cũng ok") but the look is not very attractive ("hình ảnh không được
+quá đẹp mắt"). What surprised them was the plain default look, not the behaviour: the page is the stock Streamlit theme
+with no colours, logo or styling of its own.
