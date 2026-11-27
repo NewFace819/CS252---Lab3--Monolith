@@ -1,11 +1,12 @@
 # Lab 7 — 10-minute user test (Gia Huy / wiih0521)
 
 Status: **three participant feedback items recorded, with observation 3 fixed**.
-Gia Huy confirmed the session details and assigned-task completion below; outside-group
-eligibility remains unconfirmed. Participant re-testing after the fix is not claimed.
+Gia Huy confirmed the session details, outside-group eligibility and assigned-task
+completion below. Participant re-testing after the fix is not claimed.
 Developer/browser/AppTest checks are documented separately.
 
 Participant: **P1 (anonymous label for this record; no real name collected)**.
+Eligibility: **student at another school, outside the project group**, confirmed by Gia Huy.
 Date: **2026-11-27**.
 Actual duration: **approximately 6 minutes**, confirmed by Gia Huy.
 The assignment requests 10 minutes; the actual 6-minute session is recorded without rounding up.
@@ -26,8 +27,8 @@ from test results. No student ID, contact details or personal records are needed
 ## Evidence and missing details
 
 All three observations were added on 2026-11-27 from Gia Huy's reports in chat, not from
-an automated test or an invented transcript. Whether the participant is outside the
-group and the exact prompt/response for observation 2 remain unconfirmed.
+an automated test or an invented transcript. The exact prompt/response for observation 2
+was not captured. Participant eligibility has now been confirmed by Gia Huy.
 Proposed causes/fixes are developer
 analysis; they are not additional participant quotes.
 
