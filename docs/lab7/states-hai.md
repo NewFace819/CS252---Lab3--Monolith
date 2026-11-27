@@ -27,7 +27,7 @@ Both servers ran from the repo root: `uvicorn assistant_api.main:create_app --fa
 
 ## Note on F1
 
-In the starter, a click is handled in the same run that drew the buttons, so they would stay on screen until the next
-interaction. 👍 and 👎 are therefore drawn inside one `st.empty()` slot that is cleared as soon as the answer is rated.
-Both buttons share one code path (`send_feedback(rid, 1 or -1)`, add `rid` to `rated`, toast). 👎 uses `key=f"down{i}"`.
-If this conflicts with the version on `main`, keep `main`'s.
+My own L1/L2/F1 conflicted with the version already merged into `main` (PR #72), so I kept `main`'s `ui/logic.py` and
+`ui/app.py` as the group rule says. The states above were checked on my version; `main`'s buttons are labelled
+"👍 Helpful" / "👎 Not helpful" and follow the same flow (toast, buttons disappear after a vote, `key=f"down{i}"`).
+Only the avatar change from H1 is re-applied on top of `main`'s `ui/app.py`.

@@ -2,6 +2,7 @@
 
 | Date | Member | Tool | Scope | Assistance and retained output |
 |---|---|---|---|---|
+| 2026-11-27 | vbthg | OpenAI Codex | Lab 7, issue #67, PR 1 | Dùng Codex hỗ trợ triển khai U1–U4 và L1/L2/F1, chạy pytest và Ruff, kiểm tra D.4 bằng Chrome với API cục bộ, chụp ảnh và ghi lại kết quả thao tác trong checklist. |
 | 2026-11-20 | vbthg | OpenAI Codex | Lab 6, #47, phần trên lớp | Dùng Codex để triển khai S1–S3, A1/A2, chạy pytest/Ruff và so sánh ba đường trả lời bằng stub; giữ code và bản nháp nhận xét dựa trên kết quả đo. |
 | 2026-11-20 | vbthg | OpenAI Codex | Lab 6, #47, bài về nhà | Dùng Codex để soạn E26–E30, thêm test cấu hình, chạy lại bảng so sánh và soạn bản nháp H2. Kết quả dùng provider stub; bài phản ánh cần Thông đọc trước khi nộp. |
 | 2026-11-13 | vbthg | OpenAI Codex | Lab 5, issue #33 | Used Codex to add 10 regression cases for file-backed persistence, feedback 404, admin-protected stats and salted session privacy, and run pytest/Ruff. Retained the tests. Review of the feedback changes was completed in PR #38 before its merge. |
@@ -34,3 +35,4 @@
 | 2026-11-20 | THA (hoanganhtu0922) | Claude Code | Lab 6, branches lab6/hoanganh-core | pick the H1 cases E41, E43, add section 5 (RAG) to docs/architecture.md. Checked by hand: pytest 233 passed, compare_paths.py gives 7/16/16 on E01–E20 and 9/20/20 on 25 cases, E15 is routed to the office lookup, and E43 scores below 2.0 so it abstains. |
 | 2026-11-20 | Gia Huy (wiih0521) | OpenAI Codex | PR #53 final integration after #65 | At the author request, used Codex to merge #65 first, integrate main into H3, preserve all 45 eval cases and team logs, and verify 289 tests passed with retrieval/stub 40/45 before merging #53. |
 | 2026-11-27 | Hải (NewFace819) | Claude Code | Lab 7, issue #69 (lab7/hai-core) | Used Claude Code to do U1–U4, L1, L2 and F1 on top of `feat/lab7-starter`, run both servers and capture the six D.4 states with headless Chromium, and draft `states-hai.md` and `usability_checklist-hai.md`. Checked: `pytest -q` 296 passed, `test_hello_streamlit.py` 4 passed, ruff clean, feedback API returned 201 for 👍 and 👎. The hallway test (E.3) and all of PR 2 are not done yet. |
+| 2026-11-27 | THA (hoanganhtu0922) | Claude Code | Lab 7, PR #71, lab7/hoanganh-core and lab7/hoanganh-hw | Used AI to help verify the six D.4 states with pytest/Ruff/AppTest, suggest the `st.empty()` feedback-slot fix and H1 button-label/confirmation improvement. Reviewed all changes. |

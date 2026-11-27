@@ -48,17 +48,23 @@ for i, m in enumerate(st.session_state.messages):
             st.info(m["note"])
         rid = m.get("request_id")
         if rid and rid not in st.session_state.rated:
-            # The buttons live in one placeholder so they can be cleared in the same run as the click.
-            slot = st.empty()
-            with slot.container():
-                c1, c2, _ = st.columns([1, 1, 6])
-                up = c1.button("👍", key=f"up{i}", help="This answer helped")
-                down = c2.button("👎", key=f"down{i}", help="This answer did not help")
-            if up or down:
-                client.send_feedback(rid, 1 if up else -1)
-                st.session_state.rated.add(rid)
-                slot.empty()
-                st.toast("Thanks for your feedback!" if up else "Thanks — we will look at this answer.")
+            slot = st.empty()  # replaced after a saved vote, so the buttons disappear in the same run
+            c1, c2, _ = slot.container().columns([2, 2.4, 4])
+            vote = None
+            if c1.button("👍 Helpful", key=f"up{i}", help="Helpful answer"):
+                vote = (1, "Thanks for your feedback!")
+            if c2.button("👎 Not helpful", key=f"down{i}", help="Not helpful — we will review it"):
+                vote = (-1, "Thanks — we will look at this answer.")
+            if vote:
+                rating, thanks = vote
+                if client.send_feedback(rid, rating):  # only a saved vote counts
+                    st.session_state.rated.add(rid)
+                    st.toast(thanks)
+                    slot.caption("✓ Feedback recorded — thanks!")
+                else:  # keep the buttons so the user can try again
+                    st.warning("Your feedback could not be saved. Check that the assistant is running and try again.")
+        elif rid:
+            st.caption("✓ Feedback recorded — thanks!")
 
 # ---- new question ----------------------------------------------------------------
 question = st.chat_input("Ask about fees, offices or the handbook…") or st.session_state.pop("pending", None)
