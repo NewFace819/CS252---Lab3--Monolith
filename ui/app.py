@@ -53,7 +53,11 @@ with st.sidebar:
 for i, m in enumerate(st.session_state.messages):
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
-        if m.get("sources"):
+        if m.get("source_details"):
+            for source in m["source_details"]:
+                with st.expander(f"Source: {source['id']}"):
+                    st.text(source["title"])
+        elif m.get("sources"):
             st.caption(m["sources"])
         if m.get("note"):
             st.info(m["note"])
@@ -86,6 +90,7 @@ if question:
                     "role": "assistant",
                     "content": result.answer,
                     "sources": format_sources(result.sources),
+                    "source_details": result.sources,
                     "note": status_note(result),
                     "request_id": result.request_id,
                 }

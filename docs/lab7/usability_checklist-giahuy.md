@@ -23,3 +23,22 @@ Developer checks on 2026-11-27; participant testing remains pending.
 - One thing that surprised them, in their own words: **pending**.
 
 No participant observations are inferred from automated tests or the developer browser check.
+
+## Bonus — source expanders
+
+Each newly received source has its own `Source: <id>` expander; expanding it reveals
+the title as plain text. Existing session messages that only contain the formatted
+source caption still display correctly. This UI change does not import backend code
+or alter answers, grounding or HTTP requests.
+
+Verified on desktop and at 390 × 844: source ID/title and answer wrap without horizontal
+page overflow (`scrollWidth == innerWidth == 390`); a saved rating during the phone
+check produced the thanks toast and removed both controls. This is a developer check,
+not the participant-driven H1 observation/fix.
+
+Before bonus: [caption screenshot](img/giahuy-core-sources.jpg).
+![Bonus: expanded source](img/giahuy-bonus-sources.jpg)
+![Bonus: phone-width check](img/giahuy-bonus-mobile.jpg)
+
+Merge the bonus/homework branch only after the L1/L2/F1 core branch; when shared-file
+conflicts arise, preserve the team's merged core behavior and reapply only the source view.
