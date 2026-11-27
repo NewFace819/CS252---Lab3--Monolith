@@ -43,7 +43,7 @@ def test_failed_feedback_remains_retryable():
         at.button(key="down0").click().run()
         assert not at.exception
         assert "test-request" not in at.session_state.rated
-        assert "Please try again" in at.warning[0].value
+        assert "try again" in at.warning[0].value
         assert at.button(key="down0") and not at.toast
 
 

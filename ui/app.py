@@ -18,18 +18,6 @@ from ui.logic import EXAMPLES, WELCOME, format_sources, status_note, validate_in
 st.set_page_config(page_title="FIT Study Assistant", page_icon="🎓")
 client = AssistantClient(os.getenv("ASSISTANT_API_URL", "http://127.0.0.1:8000"))
 
-
-def submit_feedback(request_id: str, rating: int) -> None:
-    """Run before rendering so a saved rating immediately hides both controls."""
-    if client.send_feedback(request_id, rating):
-        st.session_state.rated.add(request_id)
-        st.session_state.feedback_notice = (
-            "Thanks for your feedback!" if rating == 1 else "Thanks — we will look at this answer."
-        )
-    else:
-        st.session_state.feedback_error = "Your feedback could not be saved. Please try again."
-
-
 # ---- session state: remembered between reruns of this script ----------------
 if "session_id" not in st.session_state:
     st.session_state.session_id = uuid.uuid4().hex[:12]
@@ -59,16 +47,23 @@ for i, m in enumerate(st.session_state.messages):
             st.info(m["note"])
         rid = m.get("request_id")
         if rid and rid not in st.session_state.rated:
-            c1, c2, _ = st.columns([1, 1, 6])
-            c1.button("👍", key=f"up{i}", help="This answer was helpful", on_click=submit_feedback, args=(rid, 1))
-            c2.button(
-                "👎", key=f"down{i}", help="This answer was not helpful", on_click=submit_feedback, args=(rid, -1)
-            )
-
-if notice := st.session_state.pop("feedback_notice", None):
-    st.toast(notice)
-if error := st.session_state.pop("feedback_error", None):
-    st.warning(error)
+            slot = st.empty()  # replaced after a saved vote, so the buttons disappear in the same run
+            c1, c2, _ = slot.container().columns([2, 2.4, 4])
+            vote = None
+            if c1.button("👍 Helpful", key=f"up{i}", help="Helpful answer"):
+                vote = (1, "Thanks for your feedback!")
+            if c2.button("👎 Not helpful", key=f"down{i}", help="Not helpful — we will review it"):
+                vote = (-1, "Thanks — we will look at this answer.")
+            if vote:
+                rating, thanks = vote
+                if client.send_feedback(rid, rating):  # only a saved vote counts
+                    st.session_state.rated.add(rid)
+                    st.toast(thanks)
+                    slot.caption("✓ Feedback recorded — thanks!")
+                else:  # keep the buttons so the user can try again
+                    st.warning("Your feedback could not be saved. Check that the assistant is running and try again.")
+        elif rid:
+            st.caption("✓ Feedback recorded — thanks!")
 
 # ---- new question ----------------------------------------------------------------
 question = st.chat_input("Ask about fees, offices or the handbook…") or st.session_state.pop("pending", None)
