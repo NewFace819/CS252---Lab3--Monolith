@@ -1,0 +1,4 @@
+# Lab 7 H2 — Reflection (Đức Huy, npdwuy)
+
+1. Used today (PAIR *Errors + Graceful Failure*, *Feedback + Control*): when the API is down the page does not crash but says "Cannot reach the assistant…", an off-topic question gets an escalation note that names a person who can help (Training Office, room I.101), and every answer has 👍/👎 that thanks the user and then disappears at once, so they know their feedback was taken and cannot send it twice.
+2. Want to add (PAIR *Feedback + Control*): after 👎, ask one short optional question ("wrong / out of date / didn't answer my question") so the feedback tells us what to fix, and rewrite the backend-down message for students instead of developers ("The assistant is offline right now — try again in a minute, or ask the Training Office"), because "Is the backend running?" is not a next step a student can take.
