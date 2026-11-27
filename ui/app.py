@@ -16,6 +16,7 @@ from ui.api_client import AssistantClient
 from ui.logic import EXAMPLES, WELCOME, format_sources, status_note, validate_input
 
 st.set_page_config(page_title="FIT Study Assistant", page_icon="🎓")
+AVATARS = {"assistant": "🎓", "user": "🧑‍🎓"}  # replace the stock robot/face icons
 client = AssistantClient(os.getenv("ASSISTANT_API_URL", "http://127.0.0.1:8000"))
 
 # ---- session state: remembered between reruns of this script ----------------
@@ -39,7 +40,7 @@ with st.sidebar:
 
 # ---- history -------------------------------------------------------------------
 for i, m in enumerate(st.session_state.messages):
-    with st.chat_message(m["role"]):
+    with st.chat_message(m["role"], avatar=AVATARS[m["role"]]):
         st.markdown(m["content"])
         if m.get("sources"):
             st.caption(m["sources"])

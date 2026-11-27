@@ -1,0 +1,7 @@
+# Lab 7 H1: a look of our own instead of the stock Streamlit theme.
+[theme]
+primaryColor = "#0B6E4F"
+backgroundColor = "#FFFDF7"
+secondaryBackgroundColor = "#E8F1EC"
+textColor = "#1F2A24"
+font = "sans serif"
