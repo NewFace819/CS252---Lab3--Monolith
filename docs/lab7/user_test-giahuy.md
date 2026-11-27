@@ -1,7 +1,8 @@
 # Lab 7 — 10-minute user test (Gia Huy / wiih0521)
 
 Status: **three participant feedback items reported by Gia Huy; study incomplete**.
-Participant eligibility and session details still need confirmation; the H1 fix remains pending.
+Observation 3 now has a UI fix and before/after evidence; participant eligibility and
+session details still need confirmation. Participant re-testing after the fix is not claimed.
 Developer/browser/AppTest checks are documented separately.
 
 Participant (first name or anonymous label only): **pending**.
@@ -39,9 +40,40 @@ analysis; they are not additional participant quotes.
 
 ![Observation 3: tuition validation and omitted card question](img/giahuy-observation3-evidence.png)
 
-Selected observation and reason: **pending selection**.
-One resulting code change and commit: **pending implementation**.
-Before/after screenshots (`img/giahuy-before.png`, `img/giahuy-after.png`): **pending**.
+## Selected fix — observation 3
+
+Selected because the supplied screenshot shows a concrete misunderstanding during the
+assigned task: a mixed tuition/card question receives only the tuition validation error.
+The user selected this observation for the H1 fix.
+
+Added a small, always-visible guidance block below the app title:
+
+- “Ask one question per message. Send unrelated topics as separate messages.”
+- Distinguish accumulated credits for thesis eligibility (118) from credits taken
+  this semester for tuition (18), using the existing sidebar examples for each.
+
+Code change: [00a061c — clarify single-question flow](https://github.com/NewFace819/CS252---Lab3--Monolith/commit/00a061c790e721a67f5a3adc7a3ee42aa052df8e).
+This changes UI guidance only: it does not split a mixed question automatically,
+remove the 30-credit tuition check or claim broader language/topic support.
+
+### Before
+
+Unmodified screenshot supplied by Gia Huy, copied to the required before filename:
+
+![Before: mixed message answers only the tuition validation](img/giahuy-before.png)
+
+### After
+
+Actual developer browser capture after the fix, showing the guidance and the separately
+submitted thesis question. The image was saved as PNG without altering its content.
+
+![After: visible single-question and credit guidance](img/giahuy-after.png)
+
+Developer verification on 2026-11-27: sent the thesis example and then the lost-card
+example as separate messages; received the 120-credit/GPA requirement with H26#5.3,
+then Student Affairs, room I.102 with S26#3. UI tests: 13 passed; Ruff check/format passed.
+These checks establish the UI is functioning, not that the participant's confusion
+has been resolved. A participant follow-up remains to be done.
 
 The source-expander bonus was implemented independently of participant research;
 its screenshots must not be presented as a participant-driven H1 fix.
