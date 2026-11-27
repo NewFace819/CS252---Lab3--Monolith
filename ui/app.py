@@ -76,7 +76,9 @@ for i, m in enumerate(st.session_state.messages):
             st.caption("✓ Feedback recorded — thanks!")
 
 # ---- new question ----------------------------------------------------------------
-question = st.chat_input("Ask one question about fees, offices or the handbook…") or st.session_state.pop("pending", None)
+question = st.chat_input("Ask one question about fees, offices or the handbook…") or st.session_state.pop(
+    "pending", None
+)
 if question:
     problem = validate_input(question)
     if problem:

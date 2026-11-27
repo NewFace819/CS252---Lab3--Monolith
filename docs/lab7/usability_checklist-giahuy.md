@@ -31,8 +31,8 @@ question control. Whether they noticed the examples or feedback buttons was not 
 
 ## Bonus — source expanders
 
-Each newly received source has its own `Source: <id>` expander; expanding it reveals
-the title as plain text. Existing session messages that only contain the formatted
+Each newly received source shows both its ID and title on the expander label;
+expanding it displays the title as plain text. Existing session messages that only contain the formatted
 source caption still display correctly. This UI change does not import backend code
 or alter answers, grounding or HTTP requests.
 
@@ -47,3 +47,7 @@ Before bonus: [caption screenshot](img/giahuy-core-sources.jpg).
 
 Merge the bonus/homework branch only after the L1/L2/F1 core branch; when shared-file
 conflicts arise, preserve the team's merged core behavior and reapply only the source view.
+
+Review follow-up: long guidance appears only before the first question; the chat input
+keeps a one-question hint. Rechecked at 390 × 844: source labels wrap, both feedback
+controls are reachable and there is no horizontal page overflow.

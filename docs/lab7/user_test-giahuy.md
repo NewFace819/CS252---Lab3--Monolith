@@ -48,7 +48,8 @@ Selected because the supplied screenshot shows a concrete misunderstanding durin
 assigned task: a mixed tuition/card question receives only the tuition validation error.
 The user selected this observation for the H1 fix.
 
-Added a small, always-visible guidance block below the app title:
+Added a compact guidance block on the initial screen; once chat starts, the input
+placeholder continues to ask for one question at a time:
 
 - “Ask one question per message. Send unrelated topics as separate messages.”
 - Distinguish accumulated credits for thesis eligibility (118) from credits taken
@@ -66,16 +67,16 @@ Unmodified screenshot supplied by Gia Huy, copied to the required before filenam
 
 ### After
 
-Actual developer browser capture after the fix, showing the guidance and the separately
-submitted thesis question. The image was saved as PNG without altering its content.
+Actual developer browser capture of the initial screen after the review fix, showing
+the guidance and separate examples. The image is saved as PNG without content changes.
 
 ![After: visible single-question and credit guidance](img/giahuy-after.png)
 
 Developer verification on 2026-11-27: sent the thesis example and then the lost-card
 example as separate messages; received the 120-credit/GPA requirement with H26#5.3,
 then Student Affairs, room I.102 with S26#3. UI tests: 13 passed; Ruff check/format passed.
-These checks establish the UI is functioning, not that the participant's confusion
-has been resolved. A participant follow-up remains to be done.
+Participant follow-up after the fix has not been performed.
 
-The source-expander bonus was implemented independently of participant research;
-its screenshots must not be presented as a participant-driven H1 fix.
+The source-expander bonus is separate from the observation-3 guidance fix.
+
+Review follow-up validation: 306 full tests passed, 13 UI tests passed and Ruff check/format passed after integrating main's shared feedback UI.
