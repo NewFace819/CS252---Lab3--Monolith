@@ -1,12 +1,15 @@
 # Lab 7 — 10-minute user test (Gia Huy / wiih0521)
 
-Status: **three participant feedback items reported by Gia Huy; study incomplete**.
-Observation 3 now has a UI fix and before/after evidence; participant eligibility and
-session details still need confirmation. Participant re-testing after the fix is not claimed.
+Status: **three participant feedback items recorded, with observation 3 fixed**.
+Gia Huy confirmed the session details and assigned-task completion below; outside-group
+eligibility remains unconfirmed. Participant re-testing after the fix is not claimed.
 Developer/browser/AppTest checks are documented separately.
 
-Participant (first name or anonymous label only): **pending**.
-Date and duration (10 minutes): **pending**.
+Participant: **P1 (anonymous label for this record; no real name collected)**.
+Date: **2026-11-27**.
+Actual duration: **approximately 6 minutes**, confirmed by Gia Huy.
+The assignment requests 10 minutes; the actual 6-minute session is recorded without rounding up.
+Assigned task attempted/completed: **yes**, confirmed by Gia Huy.
 
 Task, exactly as assigned: “Find out if you can register your thesis with 118 credits,
 and where to replace a lost student card.”
@@ -23,9 +26,9 @@ from test results. No student ID, contact details or personal records are needed
 ## Evidence and missing details
 
 All three observations were added on 2026-11-27 from Gia Huy's reports in chat, not from
-an automated test or an invented transcript. The actual test date/duration, whether
-the participant is outside the group, the exact prompt/response for observation 2 and
-completion of the assigned task remain unconfirmed. Proposed causes/fixes are developer
+an automated test or an invented transcript. Whether the participant is outside the
+group and the exact prompt/response for observation 2 remain unconfirmed.
+Proposed causes/fixes are developer
 analysis; they are not additional participant quotes.
 
 ### Observation 3 — supplied screenshot
