@@ -13,5 +13,5 @@
 
 ## Hallway test (E.3)
 
-Tester (other team, first name only): Nam
-One thing that surprised them: Nam liked that the assistant gives guidance when it cannot answer, but said the next steps could be more specific.
+Tester (other team, first name only): Khánh
+One thing that surprised them: Khánh liked that the assistant gives guidance when it cannot answer, but said the next steps could be more specific.
