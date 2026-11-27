@@ -18,6 +18,18 @@ from ui.logic import EXAMPLES, WELCOME, format_sources, status_note, validate_in
 st.set_page_config(page_title="FIT Study Assistant", page_icon="🎓")
 client = AssistantClient(os.getenv("ASSISTANT_API_URL", "http://127.0.0.1:8000"))
 
+
+def submit_feedback(request_id: str, rating: int) -> None:
+    """Run before rendering so a saved rating immediately hides both controls."""
+    if client.send_feedback(request_id, rating):
+        st.session_state.rated.add(request_id)
+        st.session_state.feedback_notice = (
+            "Thanks for your feedback!" if rating == 1 else "Thanks — we will look at this answer."
+        )
+    else:
+        st.session_state.feedback_error = "Your feedback could not be saved. Please try again."
+
+
 # ---- session state: remembered between reruns of this script ----------------
 if "session_id" not in st.session_state:
     st.session_state.session_id = uuid.uuid4().hex[:12]
@@ -48,12 +60,15 @@ for i, m in enumerate(st.session_state.messages):
         rid = m.get("request_id")
         if rid and rid not in st.session_state.rated:
             c1, c2, _ = st.columns([1, 1, 6])
-            if c1.button("👍", key=f"up{i}"):
-                client.send_feedback(rid, 1)
-                st.session_state.rated.add(rid)
-                st.toast("Thanks for your feedback!")
-            # TODO F1 (4 lines): add a 👎 button in c2 with key=f"down{i}" that sends rating -1,
-            #   remembers rid in st.session_state.rated and shows st.toast("Thanks — we will look at this answer.")
+            c1.button("👍", key=f"up{i}", help="This answer was helpful", on_click=submit_feedback, args=(rid, 1))
+            c2.button(
+                "👎", key=f"down{i}", help="This answer was not helpful", on_click=submit_feedback, args=(rid, -1)
+            )
+
+if notice := st.session_state.pop("feedback_notice", None):
+    st.toast(notice)
+if error := st.session_state.pop("feedback_error", None):
+    st.warning(error)
 
 # ---- new question ----------------------------------------------------------------
 question = st.chat_input("Ask about fees, offices or the handbook…") or st.session_state.pop("pending", None)
