@@ -1,6 +1,6 @@
 # Lab 7 — Usability checklist (Gia Huy / wiih0521)
 
-Developer checks on 2026-11-27; participant testing remains pending.
+Developer checks on 2026-11-27; hallway feedback has been reported by Gia Huy below.
 
 - [x] First screen explains scope and provides examples.
 - [x] Empty Enter does not submit; long input is validated with a friendly warning (AppTest).
@@ -15,12 +15,17 @@ Developer checks on 2026-11-27; participant testing remains pending.
 
 ![Phone-width developer check](img/giahuy-core-mobile.jpg)
 
-## Hallway test — pending real participant
+## Hallway test — reported feedback
 
 - [ ] A student from another group used the app unassisted for two minutes.
 - First name or anonymous participant label: **pending**.
-- Date: **pending**.
-- One thing that surprised them, in their own words: **pending**.
+- Feedback reported on: **2026-11-27**; actual session date/duration and other-group eligibility still need confirmation.
+- Asked about surprises, Gia Huy relayed: **"cũng không có gì bất ngờ lắm"** (nothing particularly surprising).
+- Additional comment: **"giao diện có mỗi nút hỏi thôi mà =))"** (the interface only has a question control).
+
+The participant reported no particular surprise; this is recorded as a valid outcome,
+not replaced with an invented surprise or interpreted as proof that every control was understood.
+The second quote records their perception of the interface, not an audit of the buttons it contains.
 
 No participant observations are inferred from automated tests or the developer browser check.
 
