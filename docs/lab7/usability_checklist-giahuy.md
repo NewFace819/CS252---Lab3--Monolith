@@ -27,4 +27,3 @@ Developer checks on 2026-11-27; hallway feedback has been reported by Gia Huy be
 
 Summary: the participant found the interface unsurprising and perceived it as a simple
 question control. Whether they noticed the examples or feedback buttons was not established.
-
