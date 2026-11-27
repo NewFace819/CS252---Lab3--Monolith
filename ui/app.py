@@ -28,6 +28,12 @@ if "rated" not in st.session_state:
     st.session_state.rated = set()
 
 st.title("🎓 FIT Study Assistant")
+if len(st.session_state.messages) == 1:
+    st.info("Ask one question per message. Send unrelated topics as separate messages.")
+    st.caption(
+        "For thesis eligibility, ask about accumulated credits (e.g. 118 credits). "
+        "For tuition, ask about credits taken this semester (e.g. 18 credits)."
+    )
 if not client.healthy():
     st.error("The assistant backend is not reachable. Start it with: uvicorn assistant_api.main:create_app --factory")
 
@@ -42,7 +48,11 @@ with st.sidebar:
 for i, m in enumerate(st.session_state.messages):
     with st.chat_message(m["role"], avatar=AVATARS[m["role"]]):
         st.markdown(m["content"])
-        if m.get("sources"):
+        if m.get("source_details"):
+            for source in m["source_details"]:
+                with st.expander(f"{source['id']} — {source['title']}"):
+                    st.text(source["title"])
+        elif m.get("sources"):
             st.caption(m["sources"])
         if m.get("note"):
             st.info(m["note"])
@@ -67,7 +77,9 @@ for i, m in enumerate(st.session_state.messages):
             st.caption("✓ Feedback recorded — thanks!")
 
 # ---- new question ----------------------------------------------------------------
-question = st.chat_input("Ask about fees, offices or the handbook…") or st.session_state.pop("pending", None)
+question = st.chat_input("Ask one question about fees, offices or the handbook…") or st.session_state.pop(
+    "pending", None
+)
 if question:
     problem = validate_input(question)
     if problem:
@@ -82,6 +94,7 @@ if question:
                     "role": "assistant",
                     "content": result.answer,
                     "sources": format_sources(result.sources),
+                    "source_details": result.sources,
                     "note": status_note(result),
                     "request_id": result.request_id,
                 }
