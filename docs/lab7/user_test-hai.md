@@ -1,6 +1,6 @@
 # Lab 7 homework — 10-minute usability test (Hải)
 
-Tester (not in my team, first name only): TODO  Date: TODO
+Tester (not in my team, first name only): Lâm  Date: 2026-11-27
 Task I gave them: "Find out if you can register your thesis with 118 credits, and where to replace a lost student card."
 
 Rule: do not help or explain. Watch and write down what happens.
