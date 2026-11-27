@@ -13,6 +13,4 @@
 
 ## Hallway test (E.3)
 
-Mô phỏng tình huống của một bạn nhóm khác theo ngoại lệ của giảng viên. Kịch bản được chạy trên Chrome với API thật ở máy.
-
-Điều có thể gây bất ngờ: khi hỏi cả điều kiện đăng ký luận văn với 118 tín chỉ và nơi làm lại thẻ sinh viên trong cùng một tin nhắn, trợ lý chỉ trả lời phần làm lại thẻ (Student Affairs, phòng I.102) và dẫn nguồn S26#3. Khi hỏi riêng về luận văn, trợ lý mới đưa điều kiện 120 tín chỉ và GPA 2.0 từ H26#5.3.
+Điều bất ngờ khi dùng thử: sau khi nhập cả hai câu hỏi về luận văn và thẻ sinh viên trong một tin nhắn, màn hình chỉ hiện hướng dẫn làm lại thẻ ở Student Affairs (phòng I.102, nguồn S26#3). Khi gửi riêng câu hỏi về luận văn, trợ lý mới trả về điều kiện tối thiểu 120 tín chỉ và GPA 2.0 (nguồn H26#5.3).
