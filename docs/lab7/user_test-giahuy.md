@@ -8,15 +8,13 @@ Developer/browser/AppTest checks are documented separately.
 Participant: **P1 (anonymous label for this record; no real name collected)**.
 Eligibility: **student at another school, outside the project group**, confirmed by Gia Huy.
 Date: **2026-11-27**.
-Actual duration: **approximately 6 minutes**, confirmed by Gia Huy.
-The assignment requests 10 minutes; the actual 6-minute session is recorded without rounding up.
+Duration: **not timed**. The initial estimate was about 6 minutes; Gia Huy later clarified
+that no start/end times were recorded, so the exact duration and whether it reached the
+requested 10 minutes cannot be established.
 Assigned task attempted/completed: **yes**, confirmed by Gia Huy.
 
 Task, exactly as assigned: “Find out if you can register your thesis with 118 credits,
 and where to replace a lost student card.”
-
-Do not coach the participant. Record their actual actions and words; do not infer observations
-from test results. No student ID, contact details or personal records are needed.
 
 | # | What they did or said | What they expected | UI/system cause | Proposed fix |
 |---|---|---|---|---|
@@ -27,7 +25,7 @@ from test results. No student ID, contact details or personal records are needed
 ## Evidence and missing details
 
 All three observations were added on 2026-11-27 from Gia Huy's reports in chat, not from
-an automated test or an invented transcript. The exact prompt/response for observation 2
+a direct transcript. The exact prompt/response for observation 2
 was not captured. Participant eligibility has now been confirmed by Gia Huy.
 Proposed causes/fixes are developer
 analysis; they are not additional participant quotes.

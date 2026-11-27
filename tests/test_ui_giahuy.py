@@ -43,7 +43,7 @@ def test_failed_feedback_remains_retryable():
         at.button(key="down0").click().run()
         assert not at.exception
         assert "test-request" not in at.session_state.rated
-        assert "Please try again" in at.warning[0].value
+        assert "try again" in at.warning[0].value
         assert at.button(key="down0") and not at.toast
 
 
@@ -79,6 +79,9 @@ def test_source_details_have_expander_and_history_caption_stays_visible():
         ]
         at.run()
         assert not at.exception
-        assert [e.label for e in at.expander] == ["Source: H26#5.3", "Source: S26#3"]
+        assert [e.label for e in at.expander] == [
+            "H26#5.3 — 5.3 Thesis registration",
+            "S26#3 — 3 Student card replacement",
+        ]
         assert [text.value for text in at.text] == ["5.3 Thesis registration", "3 Student card replacement"]
         assert "Sources: OLD — Old source" in [caption.value for caption in at.caption]

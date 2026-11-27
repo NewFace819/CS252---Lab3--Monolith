@@ -25,11 +25,9 @@ Developer checks on 2026-11-27; hallway feedback has been reported by Gia Huy be
 - Asked about surprises, Gia Huy relayed: **"cũng không có gì bất ngờ lắm"** (nothing particularly surprising).
 - Additional comment: **"giao diện có mỗi nút hỏi thôi mà =))"** (the interface only has a question control).
 
-The participant reported no particular surprise; this is recorded as a valid outcome,
-not replaced with an invented surprise or interpreted as proof that every control was understood.
-The second quote records their perception of the interface, not an audit of the buttons it contains.
+Summary: the participant found the interface unsurprising and perceived it as a simple
+question control. Whether they noticed the examples or feedback buttons was not established.
 
-No participant observations are inferred from automated tests or the developer browser check.
 
 ## Bonus — source expanders
 

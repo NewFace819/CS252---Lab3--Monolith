@@ -36,9 +36,7 @@ def format_sources(sources: list[dict]) -> str:
 def status_note(result: ChatResult) -> str | None:
     """A short note shown under the answer, explaining special situations."""
     if result.escalate:
-        return (
-            "I could not find this in the official documents. " "A staff member can help: Training Office, room I.101."
-        )
+        return "I could not find this in the official documents. A staff member can help: Training Office, room I.101."
     if result.degraded:
         return "Shown directly from the source document (the AI helper was unavailable)."
     return None
