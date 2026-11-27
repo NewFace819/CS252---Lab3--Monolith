@@ -60,3 +60,28 @@ def test_long_question_is_not_sent_to_backend():
         assert not at.exception
         assert "too long" in at.warning[0].value
         factory.return_value.ask.assert_not_called()
+
+
+def test_source_details_have_expander_and_history_caption_stays_visible():
+    with patch("ui.api_client.AssistantClient") as factory:
+        factory.return_value.healthy.return_value = True
+        at = AppTest.from_file(str(APP))
+        at.session_state.messages = [
+            {"role": "assistant", "content": "Old answer", "sources": "Sources: OLD — Old source"},
+            {
+                "role": "assistant",
+                "content": "New answer",
+                "source_details": [
+                    {"id": "H26#5.3", "title": "5.3 Thesis registration"},
+                    {"id": "S26#3", "title": "3 Student card replacement"},
+                ],
+            },
+        ]
+        at.run()
+        assert not at.exception
+        assert [e.label for e in at.expander] == [
+            "H26#5.3 — 5.3 Thesis registration",
+            "S26#3 — 3 Student card replacement",
+        ]
+        assert [text.value for text in at.text] == ["5.3 Thesis registration", "3 Student card replacement"]
+        assert "Sources: OLD — Old source" in [caption.value for caption in at.caption]
