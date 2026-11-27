@@ -39,6 +39,11 @@ if "rated" not in st.session_state:
     st.session_state.rated = set()
 
 st.title("🎓 FIT Study Assistant")
+st.info("Ask one question per message. Send unrelated topics as separate messages.")
+st.caption(
+    "For thesis eligibility, ask about accumulated credits (e.g. 118 credits). "
+    "For tuition, ask about credits taken this semester (e.g. 18 credits)."
+)
 if not client.healthy():
     st.error("The assistant backend is not reachable. Start it with: uvicorn assistant_api.main:create_app --factory")
 

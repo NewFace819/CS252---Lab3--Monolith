@@ -81,4 +81,4 @@ def test_source_details_have_expander_and_history_caption_stays_visible():
         assert not at.exception
         assert [e.label for e in at.expander] == ["Source: H26#5.3", "Source: S26#3"]
         assert [text.value for text in at.text] == ["5.3 Thesis registration", "3 Student card replacement"]
-        assert at.caption[0].value == "Sources: OLD — Old source"
+        assert "Sources: OLD — Old source" in [caption.value for caption in at.caption]
