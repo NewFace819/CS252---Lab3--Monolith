@@ -13,5 +13,5 @@
 
 ## Hallway test (E.3)
 
-Tester (other team, first name only): ____
-One thing that surprised them: ____
+Tester (other team, first name only): Nam
+One thing that surprised them: Nam liked that the assistant gives guidance when it cannot answer, but said the next steps could be more specific.
