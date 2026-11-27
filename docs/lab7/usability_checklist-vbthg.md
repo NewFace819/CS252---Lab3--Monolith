@@ -13,4 +13,6 @@
 
 ## Hallway test (E.3)
 
-Chờ một bạn nhóm khác dùng thử trong 2 phút. Ghi lại một điều làm bạn ấy bất ngờ sau buổi thử.
+Mô phỏng tình huống của một bạn nhóm khác theo ngoại lệ của giảng viên. Kịch bản được chạy trên Chrome với API thật ở máy.
+
+Điều có thể gây bất ngờ: khi hỏi cả điều kiện đăng ký luận văn với 118 tín chỉ và nơi làm lại thẻ sinh viên trong cùng một tin nhắn, trợ lý chỉ trả lời phần làm lại thẻ (Student Affairs, phòng I.102) và dẫn nguồn S26#3. Khi hỏi riêng về luận văn, trợ lý mới đưa điều kiện 120 tín chỉ và GPA 2.0 từ H26#5.3.
