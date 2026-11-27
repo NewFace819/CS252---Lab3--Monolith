@@ -89,3 +89,26 @@ LLM_PROVIDER=ollama LLM_MODEL=llama3.2 python -m assistant_core "..."   # bonus:
 `POST /v1/chat` trả thêm `path` (deterministic | retrieval | llm | tool | abstain), `escalate`, `confidence`.
 Phân công và checklist nộp bài: [docs/lab6/README.md](docs/lab6/README.md).
 
+
+## Lab 7 — UI (Streamlit) · MVP v1
+
+Giao diện chat ở `ui/` là một client riêng: chỉ gọi backend qua HTTP (`ui/api_client.py`), **không import
+`assistant_core`**. Chạy 2 server, mỗi cái một terminal, từ thư mục gốc repo:
+
+```bash
+pip install -r requirements.txt && pip install -e .      # có thêm streamlit
+# terminal 1 — API, port 8000
+uvicorn assistant_api.main:create_app --factory
+# terminal 2 — UI, port 8501 (mở http://localhost:8501)
+streamlit run ui/app.py
+```
+
+API chạy ở địa chỉ khác thì đặt `ASSISTANT_API_URL=http://<host>:<port>` trước khi `streamlit run`. Nếu API chưa chạy,
+trang hiện hộp đỏ "backend is not reachable" thay vì crash.
+
+```bash
+pytest -q tests/test_ui.py                                 # api_client + logic của UI, không cần trình duyệt
+cd lab07/practice/<tên> && pytest -q test_hello_streamlit.py   # warm-up U1–U4
+```
+
+Phân công và checklist nộp bài: [docs/lab7/README.md](docs/lab7/README.md).

@@ -198,3 +198,38 @@ flowchart TD
 
 `eval/compare_paths.py` runs `eval/cases.jsonl` against the deterministic, retrieval and LLM paths and prints how many
 cases each answers correctly, how many it correctly refuses, and its latency.
+
+## 6. User interface (Lab 7)
+
+The Streamlit page in `ui/` is just another client of the API. It never imports `assistant_core`, so it could be
+replaced by a mobile or React app without touching the backend.
+
+```mermaid
+flowchart LR
+    B["Browser<br/>localhost:8501"] --> APP["ui/app.py<br/>(Streamlit page)"]
+    APP --> LOGIC["ui/logic.py<br/>validate, format sources, status note"]
+    APP --> CLIENT["ui/api_client.py<br/>AssistantClient → ChatResult"]
+    CLIENT -->|HTTP| API["FastAPI<br/>/v1/chat, /v1/feedback, /health"]
+    API --> SVC["AssistantService<br/>deterministic / RAG / tools"]
+```
+
+| File | Role |
+|---|---|
+| `ui/api_client.py` | Sends HTTP requests and turns **every** outcome into a `ChatResult`. Timeouts, connection errors, 422, 429 and 5xx each become one friendly sentence in `error`; no status code or exception reaches the user. |
+| `ui/logic.py` | Pure functions, unit-tested without a browser: `validate_input`, `format_sources` (L1), `status_note` (L2). |
+| `ui/app.py` | The page. `st.session_state` keeps `session_id`, the chat history and the answers already rated between reruns. |
+
+### What the user sees in each state
+
+| Situation | Backend | Page |
+|---|---|---|
+| normal answer | 200 + `sources` | answer + `Sources: <id> — <title>` caption |
+| waiting | — | `st.spinner("Thinking…")` |
+| empty / too long question | (not sent) / 422 | warning before calling the API |
+| assistant does not know | `escalate: true` | blue note pointing to the Training Office, room I.101 (escalation to a human) |
+| AI helper down | `degraded: true` | note "shown directly from the source document" |
+| backend down | connection error | red box at the top, and "Cannot reach the assistant…" instead of a crash |
+| too many questions | 429 | "Please wait a minute" |
+
+Feedback: each answer has 👍 / 👎, which call `POST /v1/feedback` with rating `1` / `-1`. The rated `request_id` is kept in
+`st.session_state.rated` so the buttons disappear after one vote.
