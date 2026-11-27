@@ -17,10 +17,11 @@ Developer checks on 2026-11-27; hallway feedback has been reported by Gia Huy be
 
 ## Hallway test — reported feedback
 
-- [ ] A student from another group used the app unassisted for two minutes.
+- [x] A participant outside the group tried the app for approximately two minutes.
 - Participant: **anonymous**; no real name collected.
 - Session date: **2026-11-27**; duration: **approximately 2 minutes**, confirmed by Gia Huy.
-- Other-group eligibility and whether the session was unassisted: **still unconfirmed**.
+- Eligibility: **student at another school, outside the project group**, confirmed by Gia Huy.
+- Whether any moderator assistance was provided was not recorded.
 - Asked about surprises, Gia Huy relayed: **"cũng không có gì bất ngờ lắm"** (nothing particularly surprising).
 - Additional comment: **"giao diện có mỗi nút hỏi thôi mà =))"** (the interface only has a question control).
 
