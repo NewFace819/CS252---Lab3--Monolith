@@ -21,7 +21,7 @@ Rule: do not help or explain. Watch and write down what happens.
 The one change we made (commit link): observation 3. `small_talk_reply()` in `ui/logic.py` returns a friendly reply
 when the whole message is only thanks/bye (English, or Vietnamese with or without accents; any case or punctuation), and `ui/app.py` shows it
 without calling the API; real questions, including "thanks, and where is the library?" and "hello" (the backend
-already answers greetings), still go to the API. Tests: `tests/test_ui_small_talk.py`. Commit: see PR 2 (`lab7/duchuy-hw`).
+already answers greetings), still go to the API. Tests: `tests/test_ui_small_talk.py`. Commit: [`29937df`](https://github.com/NewFace819/CS252---Lab3--Monolith/commit/29937df).
 
 Before / after screenshot (same session: thesis question, lost-card question, then `thanks`):
 
