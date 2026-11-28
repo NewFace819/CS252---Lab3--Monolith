@@ -24,3 +24,7 @@ chỉ ẩn ở lần rerun sau (đếm nút 👍: 3 → 3 ngay sau khi bấm). �
 sang hàm `rate()` gọi qua `on_click=`. Callback chạy **trước** khi Streamlit vẽ lại trang, nên lúc vẽ `rid` đã nằm trong
 `rated` và nút biến mất ngay. F1 vẫn đúng yêu cầu: `key=f"down{i}"`, gửi `send_feedback(rid, -1)`, thêm vào `rated`, toast.
 Ảnh dòng 5 và F1 là ảnh chụp sau khi sửa.
+
+*Cập nhật sau khi merge (#76):* khi merge, nhóm giữ bản `ui/app.py` của `main` (theo README), nên hàm `rate()` ở trên
+không có trên `main`. Bảng và ảnh ở đây là kết quả chạy trên branch `lab7/duchuy-core`. Bản trên `main` cũng làm nút
+biến mất ngay, bằng cách khác (`st.empty()` slot, từ #72).

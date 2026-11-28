@@ -13,7 +13,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # so "import ui..." works under streamlit
 
 from ui.api_client import AssistantClient
-from ui.logic import EXAMPLES, WELCOME, format_sources, status_note, validate_input
+from ui.logic import EXAMPLES, WELCOME, format_sources, small_talk_reply, status_note, validate_input
 
 st.set_page_config(page_title="FIT Study Assistant", page_icon="🎓")
 AVATARS = {"assistant": "🎓", "user": "🧑‍🎓"}  # replace the stock robot/face icons
@@ -84,6 +84,10 @@ if question:
     problem = validate_input(question)
     if problem:
         st.warning(problem)
+    elif reply := small_talk_reply(question):  # "thanks"/"bye": answer here, not with an escalation note
+        st.session_state.messages.append({"role": "user", "content": question})
+        st.session_state.messages.append({"role": "assistant", "content": reply})
+        st.rerun()
     else:
         st.session_state.messages.append({"role": "user", "content": question})
         with st.spinner("Thinking…"):

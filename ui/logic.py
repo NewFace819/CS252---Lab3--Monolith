@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import unicodedata
+
 from ui.api_client import ChatResult
 
 WELCOME = (
@@ -23,6 +25,27 @@ def validate_input(text: str) -> str | None:
         return "Please type a question."
     if len(t) > 2000:
         return "Your question is too long (max 2000 characters)."
+    return None
+
+
+_THANKS = {
+    "thanks", "thank you", "thanks a lot", "thank you so much", "thank u", "thx", "tks", "ty",
+    "cảm ơn", "cám ơn", "cảm ơn bạn", "cám ơn bạn", "cảm ơn ạ", "cảm ơn nhiều", "cam on", "cam on ban",
+}  # fmt: skip
+_BYE = {"bye", "goodbye", "bye bye", "see you", "tạm biệt", "tam biet"}
+
+
+def small_talk_reply(text: str) -> str | None:
+    """A friendly reply for a message that is only 'thanks' or 'bye', or None for a real question.
+
+    The backend has no intent for these, so it would answer with an escalation note
+    ("I'm not confident… contact the Training Office"), which reads like an error.
+    """
+    t = " ".join(unicodedata.normalize("NFC", text).lower().strip(" \t\n.!?,:;)(").split())
+    if t in _THANKS:
+        return "You're welcome! Ask me another question any time."
+    if t in _BYE:
+        return "Goodbye! Come back any time you have a question."
     return None
 
 
